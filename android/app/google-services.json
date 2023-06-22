@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "620538503993",
+    "firebase_url": "https://flutter-with--maps-default-rtdb.firebaseio.com",
+    "project_id": "flutter-with--maps",
+    "storage_bucket": "flutter-with--maps.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620538503993:android:a1d30d3e09ac3f86fb3ee8",
+        "android_client_info": {
+          "package_name": "com.example.instagram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "620538503993-pijmlrm5pqgvlet1ob1mppu9a0v0ep2c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf3I6m0CNLW71K8uzawKaf4d7JbmEQHA4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620538503993-8h4gt16g58nrl30si3guf599mnkknudi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "620538503993-ccjfbrtq574qg2qan4u90rih79gb0k6l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.instagram"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
