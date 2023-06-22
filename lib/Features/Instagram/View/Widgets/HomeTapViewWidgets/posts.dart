@@ -14,8 +14,8 @@ class Posts extends StatelessWidget {
             scrollDirection: Axis.vertical,
             itemCount: 6,
             itemBuilder: (BuildContext context, int index) {
-              return Padding(
-                padding: const EdgeInsets.only(left: 5.0),
+              return const Padding(
+                padding: EdgeInsets.only(left: 5.0),
                 child: PostCard(),
               );
             },

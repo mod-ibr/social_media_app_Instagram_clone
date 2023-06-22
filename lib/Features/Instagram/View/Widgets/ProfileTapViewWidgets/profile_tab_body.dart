@@ -425,8 +425,8 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
   }
 
   Widget _addingStoryBar(Size size) {
-    return Padding(
-      padding: const EdgeInsets.only(
+    return const Padding(
+      padding: EdgeInsets.only(
         top: 15.0,
       ),
       child: SizedBox(
@@ -434,7 +434,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
         child: Row(
           children: [
             Column(
-              children: const [
+              children: [
                 CircleAvatar(
                   backgroundColor: Color(0xff8f8f8f),
                   radius: 23,
@@ -457,11 +457,11 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
                 )
               ],
             ),
-            const SizedBox(
+            SizedBox(
               width: 10,
             ),
             Column(
-              children: const [
+              children: [
                 CircleAvatar(
                   radius: 25,
                   backgroundColor: Color(0xffdbdbdb),

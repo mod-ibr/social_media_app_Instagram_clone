@@ -5,7 +5,7 @@ import 'package:instagram/Features/Instagram/View/Widgets/HomeTapViewWidgets/pos
 import 'package:instagram/Features/Instagram/View/Widgets/HomeTapViewWidgets/story.dart';
 
 import '../../../ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
- import 'add_post_story_reel_live_list.dart';
+import 'add_post_story_reel_live_list.dart';
 import 'drop_down_button_list.dart';
 
 class HomeTapViewBody extends StatelessWidget {
@@ -16,9 +16,9 @@ class HomeTapViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        SingleChildScrollView(
+        const SingleChildScrollView(
           child: Column(
-            children: const [Story(), Posts()],
+            children: [Story(), Posts()],
           ),
         ),
         (BlocProvider.of<HomeViewTabCubit>(context).showDropdownList)

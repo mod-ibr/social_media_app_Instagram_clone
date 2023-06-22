@@ -63,9 +63,9 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
   }
 
   Widget _camera() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: const [
+      children: [
         SafeArea(
           child: Padding(
             padding: EdgeInsets.only(top: 20.0, right: 15.0),
@@ -92,10 +92,10 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
               child: _likeCommentShare()),
           _avatarFollowOptionRow(),
           _reelDiscription(),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, top: 10.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 20.0, top: 10.0),
             child: Row(
-              children: const [
+              children: [
                 Icon(
                   Icons.arrow_forward,
                   size: 17,
@@ -136,9 +136,9 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
   }
 
   Widget _likeCommentShare() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: const [
+      children: [
         Icon(
           Icons.favorite_border,
           color: Colors.white,

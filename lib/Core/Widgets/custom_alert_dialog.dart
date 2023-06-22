@@ -23,9 +23,9 @@ class CustomAlertDialog extends StatelessWidget {
         text: header,
         fontWeight: FontWeight.bold,
       ),
-      content: Column(
+      content: const Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           // Additional content can be added here
         ],
       ),

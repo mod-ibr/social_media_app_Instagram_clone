@@ -6,6 +6,6 @@ class SearchTapView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: SearchTabBody());
+    return const Scaffold(body: SearchTabBody());
   }
 }

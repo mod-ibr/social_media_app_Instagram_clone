@@ -84,13 +84,13 @@ class PostCard extends StatelessWidget {
       child: Row(
         children: [
           const UserAvatar(iconSize: 30, innerRadius: 35, outerRadius: 20),
-          Expanded(
+          const Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 8),
+              padding: EdgeInsets.only(left: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     // widget.snap['username'],
                     'Mahmoud',
@@ -218,8 +218,8 @@ class PostCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         //number of likes
-        Row(
-          children: const [
+        const Row(
+          children: [
             CustomText(
               // '${widget.snap['likes'].length} likes',
               text: '2.032 likes',
