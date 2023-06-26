@@ -5,8 +5,12 @@ import 'package:instagram/Core/Errors/failures.dart';
 import 'package:instagram/Core/Widgets/custom_text.dart';
 import 'package:instagram/Core/Widgets/loading_widget.dart';
 import 'package:instagram/Features/Auth/Model/auth_model.dart';
+import 'package:instagram/Features/Instagram/Model/post_model.dart';
 import 'package:instagram/Features/Instagram/View/Widgets/ProfileTapViewWidgets/edit_profile_page.dart';
-import 'package:instagram/Features/Instagram/ViewModel/ProfileViewtabModelView/profile_view_tab_cubit.dart';
+import 'package:instagram/Features/Instagram/View/Widgets/ProfileTapViewWidgets/show_post_page.dart';
+import 'package:instagram/Features/Instagram/ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
+import 'package:instagram/Features/Instagram/ViewModel/ProfileViewtabModelView/profile_view_tab_cubit.dart'
+    as profile;
 
 import '../../../../../Core/Utils/Functions/animated_navigation.dart';
 
@@ -21,11 +25,13 @@ class ProfileTabViewBody extends StatefulWidget {
 class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-
+  late final List<PostModle> posts;
   @override
   void initState() {
-    BlocProvider.of<ProfileViewTabCubit>(context)
+    print('From Profile bode initstate with uid : ${widget.userId} ');
+    BlocProvider.of<profile.ProfileViewTabCubit>(context)
         .getUserDataById(uid: widget.userId);
+    BlocProvider.of<HomeViewTabCubit>(context).getUserPosts(uid: widget.userId);
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
   }
@@ -43,13 +49,14 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: BlocBuilder<ProfileViewTabCubit, ProfileViewTabState>(
+        body: BlocBuilder<profile.ProfileViewTabCubit,
+            profile.ProfileViewTabState>(
           builder: (context, state) {
-            if (state is LoadingGetUserDataState) {
+            if (state is profile.LoadingGetUserDataState) {
               return const LoadingWidget();
-            } else if (state is ErrorGetUserDataState) {
+            } else if (state is profile.ErrorGetUserDataState) {
               String failureMessage =
-                  BlocProvider.of<ProfileViewTabCubit>(context)
+                  BlocProvider.of<profile.ProfileViewTabCubit>(context)
                       .mapFailureToMessage(state.failure);
 
               if (state.failure is NoSavedUserFailure) {
@@ -62,7 +69,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
                 return failureWidget(
                     text: failureMessage, icon: Icons.wifi_off_outlined);
               }
-            } else if (state is SucceededGetUserDataState) {
+            } else if (state is profile.SucceededGetUserDataState) {
               return succeddedWidget(size: size, userData: state.userData);
             }
             return const LoadingWidget();
@@ -81,6 +88,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CustomText(
+              alignment: Alignment.center,
               text: text,
               color: Colors.red,
             ),
@@ -495,57 +503,83 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
   }
 
   Widget _postsTab(Size size) {
-    return GridView.count(
-      crossAxisCount: 3,
-      mainAxisSpacing: 3,
-      crossAxisSpacing: 3,
-      children: List.generate(20, (index) {
-        return SizedBox(
-          width: size.width,
-          child: Stack(
-            fit: StackFit.passthrough,
-            children: <Widget>[
-              CachedNetworkImage(
-                imageUrl:
-                    'https://firebasestorage.googleapis.com/v0/b/flutter-with--maps.appspot.com/o/users_profile_img%2Fprofile.jpeg?alt=media&token=7abd37b0-56b5-48c4-ad6f-3d9acfc216e3',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (context, url) {
-                  if (url.isEmpty) {
-                    return const Icon(
-                      Icons.person_rounded,
-                      size: 40,
-                      color: Colors.white,
+    return BlocBuilder<HomeViewTabCubit, HomeViewTabState>(
+      builder: (context, state) {
+        if (state is LoadingGetPostsState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ErrorGetPostsState) {
+          return failureWidget(
+              text: state.message, icon: Icons.image_not_supported_outlined);
+        } else if (state is SucceededGetPostsState) {
+          posts = state.posts;
+          return _customGridView(posts, size);
+        }
+        return _customGridView(posts, size);
+      },
+    );
+  }
+
+  Widget _customGridView(List<PostModle> posts, size) {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3, // Number of columns in the grid
+        crossAxisSpacing: 3, // Spacing between columns
+        mainAxisSpacing: 3, // Spacing between rows
+      ),
+      itemCount: posts.length,
+      itemBuilder: (BuildContext context, int index) {
+        // Access the post at the current index
+        PostModle post = posts[index];
+
+        return GestureDetector(
+          onTap: () => AnimatedNavigation().navigateAndPush(
+              widget: ShowPostPage(postModle: post), context: context),
+          child: SizedBox(
+            width: size.width,
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: <Widget>[
+                CachedNetworkImage(
+                  imageUrl: post.imageURL,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  placeholder: (context, url) {
+                    if (url.isEmpty) {
+                      return const Icon(
+                        Icons.person_rounded,
+                        size: 40,
+                        color: Colors.white,
+                      );
+                    }
+                    return Container(
+                      alignment: Alignment.center,
+                      width: 50,
+                      height: 50,
+                      child: const CircularProgressIndicator(),
                     );
-                  }
-                  return Container(
-                    alignment: Alignment.center,
-                    width: 50,
-                    height: 50,
-                    child: const CircularProgressIndicator(),
-                  );
-                },
-                errorWidget: (context, url, error) => const Icon(
-                  Icons.person_rounded,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ),
-              const Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.play_arrow,
+                  },
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.person_rounded,
+                    size: 40,
                     color: Colors.white,
                   ),
                 ),
-              )
-            ],
+                const Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         );
-      }),
+      },
     );
   }
 }

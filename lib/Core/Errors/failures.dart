@@ -41,7 +41,6 @@ class FaceBookLogInFailure extends Failure {
   @override
   List<Object?> get props => [];
 }
-// Maps Failure
 
 class SearchFailure extends Failure {
   @override
@@ -49,6 +48,16 @@ class SearchFailure extends Failure {
 }
 
 class EmptySearchFailure extends Failure {
+  @override
+  List<Object?> get props => [];
+}
+
+class NoRetrievedPostsFailure extends Failure {
+  @override
+  List<Object?> get props => [];
+}
+
+class RetrievingPostsFailure extends Failure {
   @override
   List<Object?> get props => [];
 }

@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/Features/Auth/Model/auth_model.dart';
-import 'package:instagram/Features/Instagram/Model/post_model.dart';
 
 import '../../../../Core/Errors/errors_strings.dart';
 import '../../../../Core/Errors/exception.dart';

@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:instagram/Core/Errors/exception.dart';
+import 'package:instagram/Features/Instagram/Model/post_model.dart';
 import 'package:path/path.dart' as path;
 import '../../Features/Auth/Model/auth_model.dart';
 import '../Utils/Constants/k_constants.dart';
@@ -17,9 +19,16 @@ abstract class InstaRemoteServices {
       {required String userName, required String name, required String bio});
   Future<void> updateProfileImgUrlData({required String imgUrl});
   Future<void> removeImageFromStorageByUrl({required String imageURL});
+  Future<void> addPost({required File imageFile, required String description});
+  Future<void> deletePost({required PostModle post});
+  Future<void> updatePost(
+      {required PostModle post, File? imageFile, String? description});
+  Future<List<PostModle>> getUserPosts({required String userId});
+  Future<List<PostModle>> getPostsOrderedByTimeStamp();
 }
 
 class InstaRemoteServicesFireBase implements InstaRemoteServices {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   @override
   String getCurrentUserId() {
     return FirebaseAuth.instance.currentUser!.uid;
@@ -88,10 +97,8 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
           AuthModel user =
               AuthModel.fromJson(doc.data() as Map<String, dynamic>);
           users.add(user);
-          print('The Founded Name is : ${user.name}');
         }
       }
-      print('Number of Founded users is : ${users.length}');
 
       return users;
     } catch (e) {
@@ -120,7 +127,6 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
 
       return downloadURL;
     } catch (e) {
-      print('Error uploading image to Firebase Storage: $e');
       throw ServerException();
     }
   }
@@ -163,9 +169,9 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       // Delete the image file from Firebase Storage
       await ref.delete();
 
-      print('Profile image removed from Firebase Storage successfully!');
+      print('Image removed from Firebase Storage successfully!');
     } catch (e) {
-      print('Error removing profile image from Firebase Storage: $e');
+      print('Error removing image from Firebase Storage: $e');
       throw ServerException();
     }
   }
@@ -187,6 +193,151 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
     } catch (e) {
       print('Error updating user data: $e');
       throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> addPost(
+      {required File imageFile, required String description}) async {
+    try {
+      //*Get the current user Id.
+      String userId = getCurrentUserId();
+      //* get user data by Id, to save its name with post model data
+      AuthModel authModel = await getuserDataById(uid: userId);
+      //*Upload the Image to Storage, and get its URL.
+      String imgUrl = await uploadImageToStorage(
+          imageFile: imageFile, storageFolder: KConstants.kStoragePostFolder);
+      //*Generate Random Post Id, then prepare the Post Model.
+      String postId =
+          "${Random().nextInt(10000)}-${DateTime.now().millisecondsSinceEpoch}";
+      PostModle post = PostModle(
+          postId: postId,
+          userId: userId,
+          name: authModel.name!,
+          profileImageURL: authModel.profileImgUrl!,
+          imageURL: imgUrl,
+          caption: description,
+          timestamp: DateTime.now(),
+          likes: [],
+          comments: []);
+
+      //*Uplaod the Post Model to firestore
+      // Get the reference to the post's document
+      DocumentReference postDocRef = FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(postId);
+      // Update the document data
+      await postDocRef.set(post.toJson());
+
+      print(' Successfully Added the Post ');
+    } catch (e) {
+      print('Error When Adding the Post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> deletePost({required PostModle post}) async {
+    try {
+      //*Delete the image from storage
+      await removeImageFromStorageByUrl(imageURL: post.imageURL);
+
+      //*Delete the post document fro Firestore
+      // Making a reference to the Post document
+      DocumentReference postDocumentRef = FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(post.postId);
+
+      // Deleting the document
+      postDocumentRef.delete();
+
+      print(' Successfully Deleted the Post ');
+    } catch (e) {
+      print('Error When Adding the Post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> updatePost(
+      {required PostModle post, File? imageFile, String? description}) async {
+    try {
+      Map<String, dynamic> finalPost = {};
+
+      //*Upload the new Image to Storage, get its URL,and Remove the old Image . If new image not Null
+      late String newImgUrl;
+      if (imageFile != null) {
+        newImgUrl = await uploadImageToStorage(
+            imageFile: imageFile, storageFolder: KConstants.kStoragePostFolder);
+        finalPost[KConstants.kImageURL] = newImgUrl;
+        //* Remove the old img
+        await removeImageFromStorageByUrl(imageURL: post.imageURL);
+      }
+      //* check if the dscription empty or not
+      if (description != null) {
+        finalPost[KConstants.kcaption] = description;
+      }
+
+      //*Uplaod the Post Model to firestore
+      // Get the reference to the post's document
+      DocumentReference postDocRef = FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(post.postId);
+      // Update the document data
+      if (finalPost.isNotEmpty) {
+        await postDocRef.update({});
+      }
+
+      print('Post updated Successfully !');
+    } catch (e) {
+      print('Error When Updateing the Post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<List<PostModle>> getUserPosts({required String userId}) async {
+    try {
+      QuerySnapshot querySnapshot = await firestore
+          .collection(KConstants.kpostsCollection)
+          .where(KConstants.kUserId, isEqualTo: userId)
+          .get();
+
+      List<PostModle> userPosts = querySnapshot.docs.map((doc) {
+        return PostModle.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+      if (userPosts.isEmpty) {
+        return [];
+      }
+      return userPosts;
+    } catch (e) {
+      // Handle any errors that occur during the retrieval process
+      print('Error retrieving user posts: $e');
+      throw RetrievingPostsException();
+    }
+  }
+
+  @override
+  Future<List<PostModle>> getPostsOrderedByTimeStamp() async {
+    try {
+      QuerySnapshot querySnapshot = await firestore
+          .collection(KConstants.kpostsCollection)
+          .orderBy(KConstants.kTimestamp, descending: false)
+          .get();
+      print('**********************');
+      List<PostModle> posts = querySnapshot.docs.map((doc) {
+        return PostModle.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+      print(posts);
+      print('Posts lenght :${posts.length} ');
+      if (posts.isEmpty) {
+        return [];
+      }
+      return posts;
+    } catch (e) {
+      // Handle any errors that occur during the retrieval process
+      print('Error retrieving posts: $e');
+      throw RetrievingPostsException();
     }
   }
 }

@@ -16,19 +16,28 @@ class HomeTapViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const SingleChildScrollView(
-          child: Column(
-            children: [Story(), Posts()],
-          ),
+        SingleChildScrollView(
+          child: _homeViewBody(),
         ),
-        (BlocProvider.of<HomeViewTabCubit>(context).showDropdownList)
-            ? CustomDropDownButtonList(width: width)
-            : const SizedBox(),
-        (BlocProvider.of<HomeViewTabCubit>(context)
-                .showAddPostStoryReelLiveList)
-            ? AddPostStoryReelLiveList(width: width)
-            : const SizedBox(),
+        ..._dropDownLists(context)
       ],
     );
+  }
+
+  Widget _homeViewBody() {
+    return const Column(
+      children: [Story(), Posts()],
+    );
+  }
+
+  List<Widget> _dropDownLists(BuildContext context) {
+    return [
+      (BlocProvider.of<HomeViewTabCubit>(context).showDropdownList)
+          ? CustomDropDownButtonList(width: width)
+          : const SizedBox(),
+      (BlocProvider.of<HomeViewTabCubit>(context).showAddPostStoryReelLiveList)
+          ? AddPostStoryReelLiveList(width: width)
+          : const SizedBox(),
+    ];
   }
 }

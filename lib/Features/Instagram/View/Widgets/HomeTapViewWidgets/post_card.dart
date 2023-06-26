@@ -1,12 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/Core/Utils/Functions/date_time_formater.dart';
 import 'package:instagram/Core/Widgets/custom_text.dart';
 import 'package:instagram/Core/Widgets/user_avatar.dart';
+import 'package:instagram/Features/Instagram/Model/post_model.dart';
 import 'package:zoom_pinch_overlay/zoom_pinch_overlay.dart';
 import 'like_animtion.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({super.key});
+  final PostModle post;
+  const PostCard({super.key, required this.post});
   final bool isAnimating = false;
   final int numberOfComments = 0;
 
@@ -17,7 +21,7 @@ class PostCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Column(children: [
         //headerbar
-        _postHeader(context),
+        _postHeader(context: context, name: post.name),
         //  Love post Animation Gesture And Image
         GestureDetector(
           onDoubleTap: () async {
@@ -28,9 +32,9 @@ class PostCard extends StatelessWidget {
             // });
           },
           child: ZoomOverlay(
-            modalBarrierColor: Colors.black12, // optional
-            minScale: 0.5, // optional
-            maxScale: 3.0, // optional
+            modalBarrierColor: Colors.black12,
+            minScale: 0.5,
+            maxScale: 3.0,
             twoTouchOnly: true,
             animationDuration: const Duration(milliseconds: 100),
             animationCurve: Curves.fastOutSlowIn,
@@ -39,11 +43,31 @@ class PostCard extends StatelessWidget {
               children: [
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.45,
-                  child: const Image(
-                    image: AssetImage('assets/images/instagram_logo.png'),
-
-                    // image: NetworkImage(widget.snap['postURL']),
+                  child: CachedNetworkImage(
+                    imageUrl: post.imageURL,
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (context, url) {
+                      if (url.isEmpty) {
+                        return const Icon(
+                          Icons.person_rounded,
+                          size: 40,
+                          color: Colors.white,
+                        );
+                      }
+                      return Container(
+                        alignment: Alignment.center,
+                        width: 50,
+                        height: 50,
+                        child: const CircularProgressIndicator(),
+                      );
+                    },
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.image,
+                      size: 40,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 AnimatedOpacity(
@@ -54,11 +78,7 @@ class PostCard extends StatelessWidget {
                     duration: const Duration(
                       milliseconds: 400,
                     ),
-                    onEnd: () {
-                      // setState(() {
-                      //   isAnimating = false;
-                      // });
-                    },
+                    onEnd: () {},
                     child: const Icon(
                       Icons.favorite,
                       color: Color.fromRGBO(255, 255, 255, 1),
@@ -76,26 +96,26 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _postHeader(context) {
+  Widget _postHeader({required BuildContext context, required String name}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6)
           .copyWith(right: 0),
       color: Colors.white,
       child: Row(
         children: [
-          const UserAvatar(iconSize: 30, innerRadius: 35, outerRadius: 20),
-          const Expanded(
+          UserAvatar(
+              profileImageUrl: post.profileImageURL,
+              iconSize: 30,
+              innerRadius: 35,
+              outerRadius: 20),
+          Expanded(
             child: Padding(
-              padding: EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.only(left: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    // widget.snap['username'],
-                    'Mahmoud',
-                    style: TextStyle(fontSize: 15),
-                  ),
+                  CustomText(textOverflow: TextOverflow.ellipsis, text: name),
                 ],
               ),
             ),
@@ -151,25 +171,11 @@ class PostCard extends StatelessWidget {
         children: [
           //like
           LikeAnimation(
-            isAnimating: true, //widget.snap['likes'].contains(user.uid),
+            isAnimating: true,
             smallLike: true,
             child: IconButton(
-              onPressed: () async {
-                // await FireStoreMethods().likePost(
-                //     widget.snap['postId'], user.uid, widget.snap['likes']);
-                // setState(() {
-                //   isAnimating = true;
-                // });
-              },
-              icon:
-                  // widget.snap['likes'].contains(user.uid)
-                  //     ? const Icon(
-                  //         Icons.favorite,
-                  //         color: Colors.red,
-                  //         size: 32,
-                  //       )
-                  //     :
-                  const Icon(
+              onPressed: () async {},
+              icon: const Icon(
                 CupertinoIcons.heart,
                 size: 32,
               ),
@@ -178,10 +184,7 @@ class PostCard extends StatelessWidget {
 
           //comment
           IconButton(
-              onPressed: () {
-                // Navigator.of(context).push(MaterialPageRoute(
-                //     builder: (context) => CommentScreen(snap: widget.snap)));
-              },
+              onPressed: () {},
               icon: const Icon(
                 CupertinoIcons.chat_bubble,
                 size: 30,
@@ -218,23 +221,25 @@ class PostCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         //number of likes
-        const Row(
+        Row(
           children: [
             CustomText(
-              // '${widget.snap['likes'].length} likes',
-              text: '2.032 likes',
+              text: '${post.likes.length} likes, ',
               fontWeight: FontWeight.w800,
               fontSize: 15,
             ),
-
-            Spacer(),
+            const SizedBox(width: 15),
+            CustomText(
+              text: '${post.comments.length} Comments, ',
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+            const Spacer(),
 
             //published date
             CustomText(
-              // DateFormat.yMMMd().format(
-              //   widget.snap['datePublished'].toDate(),
-              // ),
-              text: '8 ours ago', fontWeight: FontWeight.w300,
+              text: DateTimeFormatter().formatDateTime(post.timestamp),
+              fontWeight: FontWeight.w300,
               fontSize: 15,
             ),
           ],
@@ -244,31 +249,31 @@ class PostCard extends StatelessWidget {
           height: 8,
         ),
 
-        // Column(
-        //   children: <Widget>[
-        //     ExpandableText(
-        //       widget.snap['discription'],
-        //       prefixText: widget.snap['username'],
-        //       prefixStyle: const TextStyle(fontWeight: FontWeight.bold),
-        //       expandText: 'show more',
-        //       collapseText: 'show less',
-        //       maxLines: 3,
-        //       linkColor: Colors.blue,
-        //     ),
-        //   ],
-        // ),
+        Column(
+          children: <Widget>[
+            GestureDetector(
+              onTap: () {
+                print('show the whole text');
+              },
+              child: CustomText(
+                textOverflow: TextOverflow.ellipsis,
+                text: "${post.name} : ${post.caption}",
+                maxLine: 2,
+              ),
+            ),
+          ],
+        ),
 
         //number of comments
         InkWell(
           onTap: () {
-            // Navigator.of(context).push(MaterialPageRoute(
-            //     builder: (context) => CommentScreen(snap: widget.snap)));
+            print('View All Comments');
           },
           child: Container(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Text(
                 // 'View all ${numberOfComments} comments..',
-                'View all <numberOfComments> comments..',
+                'View all comments...',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
               )),
         )

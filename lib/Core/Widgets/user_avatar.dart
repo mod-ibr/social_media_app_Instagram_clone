@@ -1,8 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class UserAvatar extends StatelessWidget {
+  final String? profileImageUrl;
+
   const UserAvatar(
       {super.key,
+      required this.profileImageUrl,
       required this.iconSize,
       required this.outerRadius,
       required this.innerRadius});
@@ -37,10 +41,34 @@ class UserAvatar extends StatelessWidget {
           child: CircleAvatar(
             backgroundColor: const Color(0xffdbdbdb),
             radius: innerRadius,
-            child: Icon(
-              Icons.person_rounded,
-              size: iconSize,
-              color: Colors.white,
+            child: ClipOval(
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              child: CachedNetworkImage(
+                imageUrl: profileImageUrl!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholder: (context, url) {
+                  if (url.isEmpty) {
+                    return const Icon(
+                      Icons.person_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    );
+                  }
+                  return Container(
+                    alignment: Alignment.center,
+                    width: 50,
+                    height: 50,
+                    child: const CircularProgressIndicator(),
+                  );
+                },
+                errorWidget: (context, url, error) => const Icon(
+                  Icons.person,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ),

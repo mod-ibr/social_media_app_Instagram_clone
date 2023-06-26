@@ -5,7 +5,7 @@ import 'package:instagram/Core/Widgets/user_avatar.dart';
 import '../../../../../Core/Utils/Constants/color_constants.dart';
 import '../../../../../Core/Widgets/custom_text.dart';
 import '../../../ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
- 
+
 class Story extends StatelessWidget {
   const Story({super.key});
   final double circleAvatarRadius = 30;
@@ -126,6 +126,7 @@ class Story extends StatelessWidget {
     return Column(
       children: [
         UserAvatar(
+            profileImageUrl: '',
             iconSize: 40,
             innerRadius: circleAvatarRadius,
             outerRadius: circleAvatarRadius * 1.05),

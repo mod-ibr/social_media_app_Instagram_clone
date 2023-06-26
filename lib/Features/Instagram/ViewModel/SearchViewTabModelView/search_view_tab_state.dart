@@ -9,22 +9,7 @@ abstract class SearchViewTabState extends Equatable {
 
 class SearchViewTabInitial extends SearchViewTabState {}
 
-class LoadingGetPostsState extends SearchViewTabState {}
-
-class SucceededGetPostsState extends SearchViewTabState {
-  final List<PostModle> posts;
-  const SucceededGetPostsState({required this.posts});
-  @override
-  List<Object> get props => [posts];
-}
-
-class ErrorGetPostsState extends SearchViewTabState {
-  final Failure failure;
-
-  const ErrorGetPostsState({required this.failure});
-  @override
-  List<Object> get props => [failure];
-}
+// class LoadingGetPostsState extends SearchViewTabState {}
 
 class LoadingSearchState extends SearchViewTabState {}
 

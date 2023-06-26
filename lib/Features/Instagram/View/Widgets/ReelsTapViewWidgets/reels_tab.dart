@@ -20,11 +20,13 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
   @override
   void initState() {
     super.initState();
-    videoPlayerController = VideoPlayerController.network(
-      "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
-    );
+    videoPlayerController = VideoPlayerController.asset(
+      'assets/images/cars_shorts.mp4',
+    )..setLooping(true);
     flickManager = FlickManager(
       videoPlayerController: videoPlayerController,
+      autoPlay: true,
+      autoInitialize: true,
     );
   }
 
@@ -57,7 +59,6 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
         _camera(),
         //bottom
         _bottom()
-        //FURTHER IMPLEMENTATION
       ],
     ));
   }
@@ -123,7 +124,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
                   child: CustomText(
                     color: Colors.white,
                     fontSize: 12,
-                    text: "priyanka_patel",
+                    text: "Mahmoud Ibrahim",
                     fontWeight: FontWeight.normal,
                   ),
                 ),
@@ -148,7 +149,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
           padding: EdgeInsets.only(top: 10, right: 5),
           child: CustomText(
               alignment: Alignment.centerRight,
-              text: "10k",
+              text: "11k",
               fontSize: 15,
               color: Colors.white,
               fontWeight: FontWeight.normal),
@@ -167,7 +168,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
             color: Colors.white,
             alignment: Alignment.centerRight,
             fontSize: 15,
-            text: "44",
+            text: "64",
             fontWeight: FontWeight.normal,
           ),
         ),
@@ -191,14 +192,18 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
         children: [
           Row(
             children: [
-              const UserAvatar(iconSize: 20, outerRadius: 20, innerRadius: 18),
+              const UserAvatar(
+                  profileImageUrl: '',
+                  iconSize: 20,
+                  outerRadius: 20,
+                  innerRadius: 18),
               const SizedBox(
                 width: 10,
               ),
               const CustomText(
                 color: Colors.white,
                 fontSize: 13,
-                text: "Priyanka Patel",
+                text: "Mahmoud Ibrahim",
                 fontWeight: FontWeight.bold,
               ),
               const SizedBox(
@@ -207,6 +212,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
               OutlinedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.3),
                   side: const BorderSide(width: 1.0, color: Colors.white),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -242,7 +248,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
         child: CustomText(
           color: Colors.white,
           fontSize: 12,
-          text: "Always ready for new Learning",
+          text: "The powerful Mercedes Car",
           fontWeight: FontWeight.normal,
         ),
       ),

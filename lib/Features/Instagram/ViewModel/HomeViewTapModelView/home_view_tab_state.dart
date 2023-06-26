@@ -22,3 +22,52 @@ class AddPostStoryReelLiveState extends HomeViewTabState {
   @override
   List<Object> get props => [showAddPostStoryReelLiveList];
 }
+
+// --------------
+class LoadingGetPostsState extends HomeViewTabState {}
+
+class SucceededGetPostsState extends HomeViewTabState {
+  final List<PostModle> posts;
+  const SucceededGetPostsState({required this.posts});
+  @override
+  List<Object> get props => [posts];
+}
+
+class ErrorGetPostsState extends HomeViewTabState {
+  final String message;
+  const ErrorGetPostsState({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+//-------------
+class LoadingAddPostState extends HomeViewTabState {}
+
+class SucceededAddPostState extends HomeViewTabState {}
+
+class ErrorAddPostState extends HomeViewTabState {
+  final String message;
+
+  const ErrorAddPostState({required this.message});
+  @override
+  List<Object> get props => [message];
+}
+
+//----------------------
+class LoadingGetUserDataState extends HomeViewTabState {}
+
+class SucceededGetUserDataState extends HomeViewTabState {
+  final AuthModel userData;
+  const SucceededGetUserDataState({required this.userData});
+  @override
+  List<Object> get props => [userData];
+}
+
+class ErrorGetUserDataState extends HomeViewTabState {
+  final Failure failure;
+
+  const ErrorGetUserDataState({required this.failure});
+  @override
+  List<Object> get props => [failure];
+}

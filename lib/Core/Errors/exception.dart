@@ -17,3 +17,5 @@ class FaceBookLogInException implements Exception {}
 class SearchException implements Exception {}
 
 class EmptySearchException implements Exception {}
+class NoRetrievedPostsException implements Exception{}
+class RetrievingPostsException implements Exception{}

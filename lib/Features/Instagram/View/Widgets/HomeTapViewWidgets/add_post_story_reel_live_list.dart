@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:instagram/Core/Utils/Functions/animated_navigation.dart';
+import 'package:instagram/Features/Instagram/View/Widgets/HomeTapViewWidgets/add_post_page.dart';
+import 'package:instagram/Features/Instagram/ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
 
+import '../../../../../Core/Utils/Functions/pick_image_from_gallery.dart';
+import '../../../../../Core/Widgets/custom_bottom_sheet.dart';
 import '../../../../../Core/Widgets/custom_text.dart';
 
 class AddPostStoryReelLiveList extends StatelessWidget {
@@ -29,7 +36,9 @@ class AddPostStoryReelLiveList extends StatelessWidget {
               title: 'Post',
               icon: Icons.grid_on_sharp,
               onTap: () {
-                print('Post Button From Add Post Story Reel Live Button');
+                print('Add Post from Home View Tap');
+
+                showBottomSheet(context);
               },
             ),
             _customeDivider(),
@@ -96,5 +105,71 @@ class AddPostStoryReelLiveList extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void showBottomSheet(BuildContext context) {
+    // Disable any opend drop down list
+    BlocProvider.of<HomeViewTabCubit>(context).disableAllDropDownLists();
+    // Show bottom sheet to select image from Gallery or Camera
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomBottomSheet(
+          header: 'Upload Photo',
+          buttons: [
+            bootomSheetButton(
+                title: 'From Gallery',
+                onTap: () {
+                  print('Upload Photo From Gallery');
+                  _bickImage(context, source: ImageSource.gallery);
+                }),
+            bootomSheetButton(
+              title: 'From Camera',
+              onTap: () {
+                print('Upload Photo From Camera');
+                _bickImage(context, source: ImageSource.camera);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget bootomSheetButton(
+      {required VoidCallback onTap,
+      required String title,
+      Color textColor = Colors.black}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 6),
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          elevation: 0.0,
+          backgroundColor: Colors.white,
+        ),
+        child: CustomText(
+          text: title,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _bickImage(context, {required ImageSource source}) async {
+    await PickImage()
+        .pickImageFromGalleryOrCamera(source: source)
+        .then((value) {
+      if (value.path.isNotEmpty) {
+        print('Image File : ${value.path}');
+        //Take the image file and pass it to add post page
+        AnimatedNavigation().navigateAndPush(
+            widget: AddPostPage(imageFile: value), context: context);
+      } else if (value.path.isEmpty) {
+        print('No Picked Image');
+      }
+
+      // Navigator.of(context).pop(); // Dismiss the bottom sheet
+    });
   }
 }

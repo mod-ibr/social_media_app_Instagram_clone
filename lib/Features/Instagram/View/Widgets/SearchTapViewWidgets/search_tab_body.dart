@@ -6,13 +6,15 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:instagram/Core/Utils/Constants/k_constants.dart';
 import 'package:instagram/Core/Utils/Functions/animated_navigation.dart';
 import 'package:instagram/Core/Widgets/custom_text.dart';
-import 'package:instagram/Core/Widgets/loading_widget.dart';
 import 'package:instagram/Features/Instagram/View/HomeViewTaps/profile_tap_view.dart';
+import 'package:instagram/Features/Instagram/View/Widgets/ProfileTapViewWidgets/show_post_page.dart';
 import 'package:instagram/Features/Instagram/View/home_view.dart';
 import 'package:instagram/Features/Instagram/ViewModel/SearchViewTabModelView/search_view_tab_cubit.dart';
 
 import '../../../../../Core/Errors/failures.dart';
 import '../../../../Auth/Model/auth_model.dart';
+import '../../../Model/post_model.dart';
+import '../../../ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
 
 class SearchTabBody extends StatefulWidget {
   const SearchTabBody({Key? key}) : super(key: key);
@@ -48,10 +50,11 @@ class _SearchTabBodyState extends State<SearchTabBody> {
   ];
   final TextEditingController _searchController = TextEditingController();
   List<AuthModel> users = [];
+  List<PostModle> posts = [];
 
   @override
   void initState() {
-    // TODO : Get Random Posts
+    BlocProvider.of<HomeViewTabCubit>(context).getPostsOrderedByTimeStamp();
     super.initState();
   }
 
@@ -69,31 +72,8 @@ class _SearchTabBodyState extends State<SearchTabBody> {
         _searchWidget(textEditingController: _searchController),
         Expanded(child: BlocBuilder<SearchViewTabCubit, SearchViewTabState>(
           builder: (context, state) {
-            // Loading Get Posts
-            if (state is LoadingGetPostsState) {
-              return const LoadingWidget();
-            }
-            // Error Get Posts
-            else if (state is ErrorGetPostsState) {
-              String failureMessage =
-                  BlocProvider.of<SearchViewTabCubit>(context)
-                      .mapFailureToMessage(state.failure);
-
-              if (state.failure is NoSavedUserFailure) {
-                return _failureWidget(text: failureMessage, icon: Icons.close);
-              } else if (state.failure is ServerFailure) {
-                return _failureWidget(
-                    text: failureMessage,
-                    icon: Icons.miscellaneous_services_rounded);
-              } else if (state.failure is OfflineFailure) {
-                return _failureWidget(
-                    text: failureMessage, icon: Icons.wifi_off_outlined);
-              }
-            }
-            //Succedded Get Posts
-            else if (state is SucceededGetPostsState ||
-                _searchController.text.isEmpty) {
-              return _gridViewWidget();
+            if (_searchController.text.isEmpty) {
+              return _buildGridView();
             }
             // Loading Search
             else if (state is LoadingSearchState) {
@@ -106,16 +86,16 @@ class _SearchTabBodyState extends State<SearchTabBody> {
                       .mapFailureToMessage(state.failure);
 
               if (state.failure is NoSavedUserFailure) {
-                return _failureWidget(text: failureMessage, icon: Icons.close);
+                return failureWidget(text: failureMessage, icon: Icons.close);
               } else if (state.failure is ServerFailure) {
-                return _failureWidget(
+                return failureWidget(
                     text: failureMessage,
                     icon: Icons.miscellaneous_services_rounded);
               } else if (state.failure is OfflineFailure) {
-                return _failureWidget(
+                return failureWidget(
                     text: failureMessage, icon: Icons.wifi_off_outlined);
               } else if (state.failure is EmptySearchFailure) {
-                return _failureWidget(
+                return failureWidget(
                     text: failureMessage, icon: Icons.search_off_outlined);
               }
             }
@@ -123,7 +103,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
             else if (state is SucceededSearchState) {
               return _usersListView(users: state.users, size: size);
             }
-            return _gridViewWidget();
+            return _buildGridView();
           },
         )),
       ],
@@ -143,11 +123,11 @@ class _SearchTabBodyState extends State<SearchTabBody> {
     );
   }
 
-  Widget _item(pos) {
+  Widget _item({required String imageUrl}) {
     return Card(
       elevation: 2,
       child: CachedNetworkImage(
-        imageUrl: images[pos],
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) {
           if (url.isEmpty) {
@@ -186,13 +166,34 @@ class _SearchTabBodyState extends State<SearchTabBody> {
     );
   }
 
-  Widget _gridViewWidget() {
+  Widget _buildGridView() {
+    return BlocBuilder<HomeViewTabCubit, HomeViewTabState>(
+      builder: (context, state) {
+        if (state is LoadingGetPostsState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ErrorGetPostsState) {
+          return failureWidget(
+              text: state.message, icon: Icons.image_not_supported_outlined);
+        } else if (state is SucceededGetPostsState) {
+          posts = state.posts;
+          return _gridViewWidget(posts: posts);
+        }
+        return _gridViewWidget(posts: posts);
+      },
+    );
+  }
+
+  Widget _gridViewWidget({required List<PostModle> posts}) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: StaggeredGridView.countBuilder(
         crossAxisCount: 3,
-        itemCount: images.length,
-        itemBuilder: (BuildContext context, int index) => _item(index),
+        itemCount: posts.length,
+        itemBuilder: (BuildContext context, int index) => GestureDetector(
+            onTap: () => AnimatedNavigation().navigateAndPush(
+                widget: ShowPostPage(postModle: posts[index]),
+                context: context),
+            child: _item(imageUrl: posts[index].imageURL)),
         staggeredTileBuilder: (int index) => const StaggeredTile.fit(1),
         crossAxisSpacing: 0.0,
       ),
@@ -205,7 +206,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
         bool isCurentUser = BlocProvider.of<SearchViewTabCubit>(context)
             .checkIsCurrentUser(user.userId!);
         if (isCurentUser) {
-          AnimatedNavigation().navigateAndPush(
+          AnimatedNavigation().navigateAndRemoveUntil(
               widget: const HomeView(customPage: KConstants.kProfilePageNumber),
               context: context);
         } else {
@@ -288,7 +289,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
     );
   }
 
-  Widget _failureWidget({required String text, required IconData icon}) {
+  Widget failureWidget({required String text, required IconData icon}) {
     return Center(
       child: SizedBox(
         width: double.infinity,
@@ -304,6 +305,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
             const SizedBox(height: 20),
             Icon(
               icon,
+              size: 30,
               color: Colors.red,
             ),
           ],
@@ -312,13 +314,3 @@ class _SearchTabBodyState extends State<SearchTabBody> {
     );
   }
 }
-
-
-// TODO: 
-/*
-* Add BlocBiulder to build : 
-* Loading For random Bosts or checking Internet Connection.
-* if text filed is emty and No Error show  posts.
-* if not empty show loading widget then users listTile without posts .
-* if any user tabbed naviogate to a proile Page with ther detailes.
- */  

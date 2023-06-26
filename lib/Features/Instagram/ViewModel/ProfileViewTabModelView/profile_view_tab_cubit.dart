@@ -39,6 +39,9 @@ class ProfileViewTabCubit extends Cubit<ProfileViewTabState> {
   Future<Either<Failure, AuthModel>> _getUserData({String? uid}) async {
     if (await networkConnectionChecker.isConnected) {
       try {
+        print(
+            "From Profile cubit _getUserData : BEFORE  Get user id from _getUserData with id :$uid");
+
         String currentUserId = instaRemoteServices.getCurrentUserId();
         String userId;
         if (uid != null) {
@@ -48,6 +51,9 @@ class ProfileViewTabCubit extends Cubit<ProfileViewTabState> {
           userId = currentUserId;
           isCurrentUser = true;
         }
+        print(
+            "From Profile cubit _getUserData : After  Get user id from _getUserData with id :$uid");
+
         AuthModel userData =
             await instaRemoteServices.getuserDataById(uid: userId);
         name = userData.name!;

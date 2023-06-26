@@ -70,8 +70,8 @@ class _HomeViewState extends State<HomeView> {
         pageNumber: 2,
       ),
       _bottomNavBar(
-          sicon: CupertinoIcons.add_circled_solid,
-          dicon: CupertinoIcons.add_circled,
+          sicon: Icons.video_collection_rounded,
+          dicon: Icons.video_collection_outlined,
           pageNumber: 3),
       _bottomNavBar(
           sicon: CupertinoIcons.bag_fill,
