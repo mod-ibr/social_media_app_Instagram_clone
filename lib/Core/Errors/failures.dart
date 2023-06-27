@@ -61,3 +61,8 @@ class RetrievingPostsFailure extends Failure {
   @override
   List<Object?> get props => [];
 }
+
+class PostNotFoundFailure extends Failure {
+  @override
+  List<Object?> get props => [];
+}

@@ -19,4 +19,5 @@ abstract class ErrorsStrings {
   static String emptySearchFailureMessage = "No Users founded for that name";
   static String retrievingPostsFailureMessage = 'Error retrieving user posts';
   static String noRetrievedPostsFailureMessage = 'No Posts yet';
+  static String postNotFoundFailureMessage = 'Post not found';
 }

@@ -12,7 +12,7 @@ import '../HomeTapViewWidgets/post_card.dart';
 
 class ShowPostPage extends StatefulWidget {
   const ShowPostPage({super.key, required this.postModle});
-  final PostModle postModle;
+  final PostModel postModle;
 
   @override
   State<ShowPostPage> createState() => _ShowPostPageState();
@@ -80,25 +80,25 @@ class _ShowPostPageState extends State<ShowPostPage> {
   }
 
   Widget failureWidget({required String text, required IconData icon}) {
-    return Center(
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CustomText(
-              alignment: Alignment.center,
-              text: text,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 20),
-            Icon(
-              icon,
-              color: Colors.red,
-            ),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CustomText(
+            text: text,
+            fontSize: 50,
+            color: Colors.red,
+            alignment: Alignment.center,
+          ),
+          const SizedBox(height: 20),
+          Icon(
+            icon,
+            color: Colors.red,
+            size: 100,
+          ),
+        ],
       ),
     );
   }

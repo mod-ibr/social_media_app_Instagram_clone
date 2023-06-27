@@ -145,11 +145,15 @@ class PickedimagePage extends StatelessWidget {
         children: [
           CustomText(
             text: text,
+            fontSize: 50,
             color: Colors.red,
+            alignment: Alignment.center,
           ),
+          const SizedBox(height: 20),
           Icon(
             icon,
             color: Colors.red,
+            size: 100,
           ),
         ],
       ),

@@ -8,6 +8,8 @@ abstract class KConstants {
   static const kIsUserLoggedIn = 'isUserLoggedIn';
   static const kUsersCollection = 'users';
   static const kpostsCollection = 'posts';
+  static const kLikesCollection = 'likes';
+  static const kCommentsCollection = 'comments';
   static const kSplashScreenDurationInSecond = 3;
   static const kProfileImageUrl = 'profileImageurl';
   static const kBio = 'bio';
@@ -15,9 +17,13 @@ abstract class KConstants {
   static const kImageURL = 'imageURL';
   static const kcaption = 'caption';
   static const kTimestamp = 'timestamp';
-  static const kComments = 'comments';
-  static const kLikes = 'likes';
+  static const kNComments = 'nComments';
+  static const kNLikes = 'nLikes';
+  static const kLikeId = 'likeId';
   static const kCommentId = 'commentId';
+  static const kLikedPostIds = 'likedPostIds';
+  static const kCommentedPostIds = 'commentedPostIds';
+
   static const kContent = 'content';
   static const kNFollowers = 'nFollowers';
   static const kNFollowing = 'nFollowing';

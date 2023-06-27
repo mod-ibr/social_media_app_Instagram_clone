@@ -25,8 +25,8 @@ class HomeTapViewBody extends StatelessWidget {
   }
 
   Widget _homeViewBody() {
-    return const Column(
-      children: [Story(), Posts()],
+    return Column(
+      children: [Story(), const Posts()],
     );
   }
 

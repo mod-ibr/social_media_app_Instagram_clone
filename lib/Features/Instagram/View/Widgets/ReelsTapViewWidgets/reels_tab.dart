@@ -192,7 +192,7 @@ class _ReelsTabViewVideoState extends State<ReelsTabViewVideo> {
         children: [
           Row(
             children: [
-              const UserAvatar(
+              UserAvatar(
                   profileImageUrl: '',
                   iconSize: 20,
                   outerRadius: 20,

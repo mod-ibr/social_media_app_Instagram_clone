@@ -50,7 +50,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
   ];
   final TextEditingController _searchController = TextEditingController();
   List<AuthModel> users = [];
-  List<PostModle> posts = [];
+  List<PostModel> posts = [];
 
   @override
   void initState() {
@@ -183,7 +183,7 @@ class _SearchTabBodyState extends State<SearchTabBody> {
     );
   }
 
-  Widget _gridViewWidget({required List<PostModle> posts}) {
+  Widget _gridViewWidget({required List<PostModel> posts}) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: StaggeredGridView.countBuilder(
@@ -290,26 +290,26 @@ class _SearchTabBodyState extends State<SearchTabBody> {
   }
 
   Widget failureWidget({required String text, required IconData icon}) {
-    return Center(
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CustomText(
-              alignment: Alignment.center,
-              text: text,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 20),
-            Icon(
-              icon,
-              size: 30,
-              color: Colors.red,
-            ),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CustomText(
+            maxLine: 2,
+            text: text,
+            fontSize: 25,
+            color: Colors.red,
+            alignment: Alignment.center,
+          ),
+          const SizedBox(height: 20),
+          Icon(
+            icon,
+            color: Colors.red,
+            size: 100,
+          ),
+        ],
       ),
     );
   }

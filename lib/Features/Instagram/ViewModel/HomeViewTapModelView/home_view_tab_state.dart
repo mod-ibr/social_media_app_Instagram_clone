@@ -27,7 +27,7 @@ class AddPostStoryReelLiveState extends HomeViewTabState {
 class LoadingGetPostsState extends HomeViewTabState {}
 
 class SucceededGetPostsState extends HomeViewTabState {
-  final List<PostModle> posts;
+  final List<PostModel> posts;
   const SucceededGetPostsState({required this.posts});
   @override
   List<Object> get props => [posts];

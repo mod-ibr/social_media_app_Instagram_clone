@@ -25,7 +25,7 @@ class ProfileTabViewBody extends StatefulWidget {
 class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  late final List<PostModle> posts;
+  late final List<PostModel> posts;
   @override
   void initState() {
     print('From Profile bode initstate with uid : ${widget.userId} ');
@@ -80,25 +80,26 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
   }
 
   Widget failureWidget({required String text, required IconData icon}) {
-    return Center(
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CustomText(
-              alignment: Alignment.center,
-              text: text,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 20),
-            Icon(
-              icon,
-              color: Colors.red,
-            ),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CustomText(
+            text: text,
+            fontSize: 50,
+            color: Colors.red,
+            alignment: Alignment.center,
+          ),
+          const SizedBox(height: 20),
+          Icon(
+            icon,
+            color: Colors.red,
+            size: 100,
+          ),
+        ],
       ),
     );
   }
@@ -519,7 +520,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
     );
   }
 
-  Widget _customGridView(List<PostModle> posts, size) {
+  Widget _customGridView(List<PostModel> posts, size) {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3, // Number of columns in the grid
@@ -529,7 +530,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
       itemCount: posts.length,
       itemBuilder: (BuildContext context, int index) {
         // Access the post at the current index
-        PostModle post = posts[index];
+        PostModel post = posts[index];
 
         return GestureDetector(
           onTap: () => AnimatedNavigation().navigateAndPush(

@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:instagram/Core/Services/insta_remote_services.dart';
+import 'package:instagram/Features/Instagram/ViewModel/LikeDislikeFollowUnfollowFeatures/like_dislike_follow_unfollow_featurs_cubit.dart';
 import 'package:instagram/Features/Instagram/ViewModel/ProfileViewtabModelView/profile_view_tab_cubit.dart';
 import 'package:instagram/Features/Instagram/ViewModel/SearchViewTabModelView/search_view_tab_cubit.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -44,6 +45,14 @@ Future<void> servicesLocator() async {
   // Search View Tab Bloc
   sl.registerLazySingleton<SearchViewTabCubit>(
     () => SearchViewTabCubit(
+      networkConnectionChecker: sl(),
+      instaRemoteServices: sl(),
+    ),
+  );
+
+  // Like, Dislike, and Follow, Unfollow Featurs Cubit Bloc
+  sl.registerLazySingleton<LikeDislikeFollowUnfollowFeatursCubit>(
+    () => LikeDislikeFollowUnfollowFeatursCubit(
       networkConnectionChecker: sl(),
       instaRemoteServices: sl(),
     ),

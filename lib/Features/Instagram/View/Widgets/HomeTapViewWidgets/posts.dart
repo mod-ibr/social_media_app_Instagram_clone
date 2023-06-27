@@ -14,7 +14,7 @@ class Posts extends StatefulWidget {
 }
 
 class _PostsState extends State<Posts> {
-  List<PostModle> posts = [];
+  List<PostModel> posts = [];
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _PostsState extends State<Posts> {
     );
   }
 
-  Widget _postCard({required List<PostModle> posts}) {
+  Widget _postCard({required List<PostModel> posts}) {
     return Column(
       children: [
         SizedBox(
@@ -62,26 +62,26 @@ class _PostsState extends State<Posts> {
   }
 
   Widget failureWidget({required String text, required IconData icon}) {
-    return Center(
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CustomText(
-              alignment: Alignment.center,
-              text: text,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 20),
-            Icon(
-              icon,
-              size: 30,
-              color: Colors.red,
-            ),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      height: 400,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CustomText(
+            text: text,
+            fontSize: 50,
+            color: Colors.red,
+            alignment: Alignment.center,
+          ),
+          const SizedBox(height: 20),
+          Icon(
+            icon,
+            color: Colors.red,
+            size: 100,
+          ),
+        ],
       ),
     );
   }

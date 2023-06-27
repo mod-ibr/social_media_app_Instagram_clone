@@ -7,21 +7,13 @@ import '../../../../../Core/Widgets/custom_text.dart';
 import '../../../ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
 
 class Story extends StatelessWidget {
-  const Story({super.key});
+  Story({super.key});
   final double circleAvatarRadius = 30;
-  final LinearGradient linearGradient = const LinearGradient(
+  final LinearGradient linearGradient = LinearGradient(
     begin: Alignment.bottomLeft,
     end: Alignment.bottomRight,
-    stops: [0.2, 0.4, 1.0, 0.8, 0.8, 0.4, 0.2],
-    colors: [
-      Color(0xFFF1B315),
-      Color(0xFFF34249),
-      Color(0xFFBE09A6),
-      Color(0xFFCD4FBD),
-      Color(0xFFF00D67),
-      Color(0xFFF34249),
-      Color(0xFFE38337),
-    ],
+    stops: const [0.2, 0.4, 1.0, 0.8, 0.8, 0.4, 0.2],
+    colors: ColorConstants.statusColorGradient,
   );
   @override
   Widget build(BuildContext context) {
@@ -37,32 +29,23 @@ class Story extends StatelessWidget {
           height: 100,
           color: Colors.white,
           padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 5),
-          child: Row(
-            children: [
-              _accountOwnerAvater(
-                  width: width,
-                  height: height,
-                  onTap: () {
-                    print('Add Story Avatar button pressed');
-                  }),
-              const SizedBox(
-                width: 5,
-              ),
-              Expanded(
-                child: SizedBox(
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 6,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 5.0),
-                        child: _usersAvatar(width, height),
-                      );
-                    },
-                  ),
-                ),
-              )
-            ],
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 6,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == 0) {
+                return _accountOwnerAvater(
+                    width: width,
+                    height: height,
+                    onTap: () {
+                      print('Add Story Avatar button pressed');
+                    });
+              }
+              return Padding(
+                padding: const EdgeInsets.only(left: 5.0),
+                child: _usersAvatar(width, height),
+              );
+            },
           ),
         );
       },

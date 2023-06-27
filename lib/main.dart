@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram/Features/Instagram/ViewModel/LikeDislikeFollowUnfollowFeatures/like_dislike_follow_unfollow_featurs_cubit.dart';
 import 'package:instagram/Features/Instagram/ViewModel/ProfileViewtabModelView/profile_view_tab_cubit.dart';
 import 'package:instagram/Features/Instagram/ViewModel/SearchViewTabModelView/search_view_tab_cubit.dart';
 
@@ -31,6 +32,9 @@ void main() async {
         ),
         BlocProvider<SearchViewTabCubit>(
           create: (_) => di.sl<SearchViewTabCubit>(),
+        ),
+        BlocProvider<LikeDislikeFollowUnfollowFeatursCubit>(
+          create: (_) => di.sl<LikeDislikeFollowUnfollowFeatursCubit>(),
         ),
       ],
       child: const MyApp(),

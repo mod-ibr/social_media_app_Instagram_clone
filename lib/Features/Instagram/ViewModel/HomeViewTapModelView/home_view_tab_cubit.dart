@@ -62,7 +62,7 @@ class HomeViewTabCubit extends Cubit<HomeViewTabState> {
     print("Get user post from  getuserpost with id :$uid");
 
     emit(LoadingGetPostsState());
-    final Either<Failure, List<PostModle>> failureOrSuccess =
+    final Either<Failure, List<PostModel>> failureOrSuccess =
         await _getUserPosts(uid: uid);
 
     failureOrSuccess.fold(
@@ -74,7 +74,7 @@ class HomeViewTabCubit extends Cubit<HomeViewTabState> {
 
   Future<void> getPostsOrderedByTimeStamp() async {
     emit(LoadingGetPostsState());
-    final Either<Failure, List<PostModle>> failureOrSuccess =
+    final Either<Failure, List<PostModel>> failureOrSuccess =
         await _getPostsOrderedByTimeStamp();
 
     failureOrSuccess.fold(
@@ -100,7 +100,7 @@ class HomeViewTabCubit extends Cubit<HomeViewTabState> {
     }
   }
 
-  Future<Either<Failure, List<PostModle>>> _getUserPosts({String? uid}) async {
+  Future<Either<Failure, List<PostModel>>> _getUserPosts({String? uid}) async {
     print("Get user post from _getuserpost with id :$uid");
     if (await networkConnectionChecker.isConnected) {
       try {
@@ -113,7 +113,7 @@ class HomeViewTabCubit extends Cubit<HomeViewTabState> {
           userId = currentUserId;
           isCurrentUser = true;
         }
-        List<PostModle> posts =
+        List<PostModel> posts =
             await instaRemoteServices.getUserPosts(userId: userId);
         if (posts.isEmpty) {
           return left(NoRetrievedPostsFailure());
@@ -127,10 +127,10 @@ class HomeViewTabCubit extends Cubit<HomeViewTabState> {
     }
   }
 
-  Future<Either<Failure, List<PostModle>>> _getPostsOrderedByTimeStamp() async {
+  Future<Either<Failure, List<PostModel>>> _getPostsOrderedByTimeStamp() async {
     if (await networkConnectionChecker.isConnected) {
       try {
-        List<PostModle> posts =
+        List<PostModel> posts =
             await instaRemoteServices.getPostsOrderedByTimeStamp();
         if (posts.isEmpty) {
           return left(NoRetrievedPostsFailure());

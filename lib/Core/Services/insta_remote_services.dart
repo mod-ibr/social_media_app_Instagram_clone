@@ -7,6 +7,8 @@ import 'package:instagram/Core/Errors/exception.dart';
 import 'package:instagram/Features/Instagram/Model/post_model.dart';
 import 'package:path/path.dart' as path;
 import '../../Features/Auth/Model/auth_model.dart';
+import '../../Features/Instagram/Model/comment_model.dart';
+import '../../Features/Instagram/Model/like_model.dart';
 import '../Utils/Constants/k_constants.dart';
 
 abstract class InstaRemoteServices {
@@ -20,11 +22,14 @@ abstract class InstaRemoteServices {
   Future<void> updateProfileImgUrlData({required String imgUrl});
   Future<void> removeImageFromStorageByUrl({required String imageURL});
   Future<void> addPost({required File imageFile, required String description});
-  Future<void> deletePost({required PostModle post});
+  Future<void> deletePost({required PostModel post});
   Future<void> updatePost(
-      {required PostModle post, File? imageFile, String? description});
-  Future<List<PostModle>> getUserPosts({required String userId});
-  Future<List<PostModle>> getPostsOrderedByTimeStamp();
+      {required PostModel post, File? imageFile, String? description});
+  Future<List<PostModel>> getUserPosts({required String userId});
+  Future<List<PostModel>> getPostsOrderedByTimeStamp();
+  Future<void> likePost({required String postId});
+  Future<void> addComment({required String postId, required String content});
+  Future<PostModel> getPostById({required String postId});
 }
 
 class InstaRemoteServicesFireBase implements InstaRemoteServices {
@@ -200,36 +205,45 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
   Future<void> addPost(
       {required File imageFile, required String description}) async {
     try {
-      //*Get the current user Id.
+      // Get the current user Id.
       String userId = getCurrentUserId();
-      //* get user data by Id, to save its name with post model data
+
+      // Get user data by Id to save its name with the post model data.
       AuthModel authModel = await getuserDataById(uid: userId);
-      //*Upload the Image to Storage, and get its URL.
+
+      // Upload the Image to Storage and get its URL.
       String imgUrl = await uploadImageToStorage(
-          imageFile: imageFile, storageFolder: KConstants.kStoragePostFolder);
-      //*Generate Random Post Id, then prepare the Post Model.
+        imageFile: imageFile,
+        storageFolder: KConstants.kStoragePostFolder,
+      );
+
+      // Generate Random Post Id, then prepare the Post Model.
       String postId =
           "${Random().nextInt(10000)}-${DateTime.now().millisecondsSinceEpoch}";
-      PostModle post = PostModle(
-          postId: postId,
-          userId: userId,
-          name: authModel.name!,
-          profileImageURL: authModel.profileImgUrl!,
-          imageURL: imgUrl,
-          caption: description,
-          timestamp: DateTime.now(),
-          likes: [],
-          comments: []);
 
-      //*Uplaod the Post Model to firestore
-      // Get the reference to the post's document
+      PostModel post = PostModel(
+        postId: postId,
+        userId: userId,
+        name: authModel.name!,
+        profileImageURL: authModel.profileImgUrl!,
+        imageURL: imgUrl,
+        caption: description,
+        timestamp: DateTime.now(),
+        likedPostIds: [], // Initialize likedPostIds as an empty list
+        commentedPostIds: [], // Initialize commentedPostIds as an empty list
+      );
+
+      // Upload the Post Model to Firestore.
       DocumentReference postDocRef = FirebaseFirestore.instance
           .collection(KConstants.kpostsCollection)
           .doc(postId);
-      // Update the document data
       await postDocRef.set(post.toJson());
 
-      print(' Successfully Added the Post ');
+      // Create the nested collections for likes and comments
+      await postDocRef.collection(KConstants.kLikesCollection).add({});
+      await postDocRef.collection(KConstants.kCommentsCollection).add({});
+
+      print('Successfully Added the Post');
     } catch (e) {
       print('Error When Adding the Post: $e');
       throw ServerException();
@@ -237,7 +251,7 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
   }
 
   @override
-  Future<void> deletePost({required PostModle post}) async {
+  Future<void> deletePost({required PostModel post}) async {
     try {
       //*Delete the image from storage
       await removeImageFromStorageByUrl(imageURL: post.imageURL);
@@ -260,7 +274,7 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
 
   @override
   Future<void> updatePost(
-      {required PostModle post, File? imageFile, String? description}) async {
+      {required PostModel post, File? imageFile, String? description}) async {
     try {
       Map<String, dynamic> finalPost = {};
 
@@ -296,15 +310,24 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
   }
 
   @override
-  Future<List<PostModle>> getUserPosts({required String userId}) async {
+  Future<List<PostModel>> getUserPosts({required String userId}) async {
     try {
       QuerySnapshot querySnapshot = await firestore
           .collection(KConstants.kpostsCollection)
           .where(KConstants.kUserId, isEqualTo: userId)
           .get();
 
-      List<PostModle> userPosts = querySnapshot.docs.map((doc) {
-        return PostModle.fromJson(doc.data() as Map<String, dynamic>);
+      List<PostModel> userPosts = querySnapshot.docs.map((doc) {
+        PostModel postModel =
+            PostModel.fromJson(doc.data() as Map<String, dynamic>);
+        if (postModel.likedPostIds.contains(userId)) {
+          postModel.isiked = true;
+        } else {
+          postModel.isiked = false;
+        }
+        postModel.nLikes = postModel.likedPostIds.length;
+        postModel.nComments = postModel.commentedPostIds.length;
+        return postModel;
       }).toList();
       if (userPosts.isEmpty) {
         return [];
@@ -318,15 +341,25 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
   }
 
   @override
-  Future<List<PostModle>> getPostsOrderedByTimeStamp() async {
+  Future<List<PostModel>> getPostsOrderedByTimeStamp() async {
     try {
       QuerySnapshot querySnapshot = await firestore
           .collection(KConstants.kpostsCollection)
-          .orderBy(KConstants.kTimestamp, descending: false)
+          .orderBy(KConstants.kTimestamp, descending: true)
           .get();
       print('**********************');
-      List<PostModle> posts = querySnapshot.docs.map((doc) {
-        return PostModle.fromJson(doc.data() as Map<String, dynamic>);
+      List<PostModel> posts = querySnapshot.docs.map((doc) {
+        String currentUserId = getCurrentUserId();
+        PostModel postModel =
+            PostModel.fromJson(doc.data() as Map<String, dynamic>);
+        if (postModel.likedPostIds.contains(currentUserId)) {
+          postModel.isiked = true;
+        } else {
+          postModel.isiked = false;
+        }
+        postModel.nLikes = postModel.likedPostIds.length;
+        postModel.nComments = postModel.commentedPostIds.length;
+        return postModel;
       }).toList();
       print(posts);
       print('Posts lenght :${posts.length} ');
@@ -338,6 +371,120 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       // Handle any errors that occur during the retrieval process
       print('Error retrieving posts: $e');
       throw RetrievingPostsException();
+    }
+  }
+
+  @override
+  Future<PostModel> getPostById({required String postId}) async {
+    try {
+      DocumentSnapshot postSnapshot = await FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(postId)
+          .get();
+
+      if (postSnapshot.exists) {
+        PostModel postModel =
+            PostModel.fromJson(postSnapshot.data() as Map<String, dynamic>);
+        postModel.nLikes = postModel.likedPostIds.length;
+        postModel.nComments = postModel.commentedPostIds.length;
+        return postModel;
+      } else {
+        throw PostNotFoundException();
+      }
+    } catch (e) {
+      print('Error when getting the post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> likePost({required String postId}) async {
+    try {
+      // Get the current user Id.
+      String userId = getCurrentUserId();
+
+      // Get the post document reference.
+      DocumentReference postDocRef = FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(postId);
+
+      // Check if the user has already liked the post.
+      DocumentSnapshot postSnapshot = await postDocRef.get();
+      PostModel post =
+          PostModel.fromJson(postSnapshot.data() as Map<String, dynamic>);
+      // List<String> likedPostIds = post.likedPostIds ?? [];
+      List<String> likedPostIds = post.likedPostIds;
+
+      if (likedPostIds.contains(userId)) {
+        // User already liked the post, so we need to unlike it.
+        likedPostIds.remove(userId);
+
+        // Delete the like document from the nested like collection.
+        await postDocRef
+            .collection(KConstants.kLikesCollection)
+            .doc(userId)
+            .delete();
+      } else {
+        // User hasn't liked the post yet, so we need to like it.
+        likedPostIds.add(userId);
+
+        // Create the like document in the nested like collection.
+        LikeModel like = LikeModel(
+          userId: userId,
+          likeId: postId, // Use the same ID as the post ID for simplicity
+          timestamp: DateTime.now(),
+        );
+        await postDocRef
+            .collection(KConstants.kLikesCollection)
+            .doc(userId)
+            .set(like.toJson());
+      }
+
+      // Update the post document with the new likedPostIds list.
+      await postDocRef.update({
+        KConstants.kLikedPostIds: likedPostIds,
+      });
+
+      print('Successfully liked/unliked the post');
+    } catch (e) {
+      print('Error when liking/unliking the post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> addComment(
+      {required String postId, required String content}) async {
+    try {
+      // Get the current user Id.
+      String userId = getCurrentUserId();
+
+      // Get the post document reference.
+      DocumentReference postDocRef = FirebaseFirestore.instance
+          .collection(KConstants.kpostsCollection)
+          .doc(postId);
+
+      // Create the comment document in the nested comment collection.
+      CommentModel comment = CommentModel(
+        commentId: userId + DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        content: content,
+        timestamp: DateTime.now(),
+      );
+      await postDocRef
+          .collection(KConstants.kCommentsCollection)
+          .doc(comment.commentId)
+          .set(comment.toJson());
+
+      // Increment the number of comments in the post document.
+      postDocRef.update({
+        KConstants.kNComments: FieldValue.increment(1),
+      });
+
+      print('Successfully added the comment');
+    } catch (e) {
+      print('Error when adding the comment: $e');
+      throw ServerException();
     }
   }
 }
