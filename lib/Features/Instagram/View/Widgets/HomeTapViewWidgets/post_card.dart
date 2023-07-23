@@ -9,6 +9,11 @@ import 'package:instagram/Core/Widgets/user_avatar.dart';
 import 'package:instagram/Features/Instagram/Model/post_model.dart';
 import 'package:instagram/Features/Instagram/ViewModel/LikeDislikeFollowUnfollowFeatures/like_dislike_follow_unfollow_featurs_cubit.dart';
 import 'package:zoom_pinch_overlay/zoom_pinch_overlay.dart';
+import '../../../../../Core/Utils/Constants/k_constants.dart';
+import '../../../../../Core/Utils/Functions/animated_navigation.dart';
+import '../../../ViewModel/SearchViewTabModelView/search_view_tab_cubit.dart';
+import '../../HomeViewTaps/profile_tap_view.dart';
+import '../../home_view.dart';
 import 'like_animtion.dart';
 
 // ignore: must_be_immutable
@@ -51,11 +56,27 @@ class PostCard extends StatelessWidget {
       color: Colors.white,
       child: Row(
         children: [
-          UserAvatar(
-              profileImageUrl: post.profileImageURL,
-              iconSize: 30,
-              innerRadius: 35,
-              outerRadius: 20),
+          GestureDetector(
+            onTap: () {
+              bool isCurentUser = BlocProvider.of<SearchViewTabCubit>(context)
+                  .checkIsCurrentUser(post.userId);
+              if (isCurentUser) {
+                AnimatedNavigation().navigateAndRemoveUntil(
+                    widget: const HomeView(
+                        customPage: KConstants.kProfilePageNumber),
+                    context: context);
+              } else {
+                AnimatedNavigation().navigateAndPush(
+                    widget: ProfileTapView(userId: post.userId),
+                    context: context);
+              }
+            },
+            child: UserAvatar(
+                profileImageUrl: post.profileImageURL,
+                iconSize: 30,
+                innerRadius: 35,
+                outerRadius: 20),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 8),

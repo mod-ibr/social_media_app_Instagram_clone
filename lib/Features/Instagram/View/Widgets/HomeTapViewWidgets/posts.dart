@@ -34,6 +34,7 @@ class _PostsState extends State<Posts> {
               text: state.message, icon: Icons.image_not_supported_outlined);
         } else if (state is SucceededGetPostsState) {
           posts = state.posts;
+
           return _postCard(posts: state.posts);
         }
         return _postCard(posts: posts);
@@ -50,6 +51,7 @@ class _PostsState extends State<Posts> {
             scrollDirection: Axis.vertical,
             itemCount: posts.length,
             itemBuilder: (BuildContext context, int index) {
+              print('name : ${posts[index].name} ');
               return Padding(
                 padding: const EdgeInsets.only(left: 5.0),
                 child: PostCard(post: posts[index]),

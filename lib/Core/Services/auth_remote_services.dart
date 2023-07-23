@@ -7,9 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../Core/Errors/exception.dart';
 import '../../Features/Auth/Model/auth_model.dart';
 import '../Utils/Constants/k_constants.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 abstract class AuthRemoteServices {
-  Future<Unit> setUserData(AuthModel authModel);
+  Future<Unit> setUserData({required AuthModel authModel, bool isupdate});
   Future<UserCredential> createAccount(
       {required String email, required String password});
   Future<UserCredential> emailAndPasswordLogIn(
@@ -111,11 +112,21 @@ class AuthRemoteServicesFireBase implements AuthRemoteServices {
     }
   }
 
+  Future<String> getFCMToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+    return token ?? '';
+  }
+
   @override
-  Future<Unit> setUserData(AuthModel authModel) async {
+  Future<Unit> setUserData(
+      {required AuthModel authModel, bool isupdate = false}) async {
     try {
       // Get the current user ID
       String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Retrieve the FCM token
+      String fcmToken = await getFCMToken();
 
       // Convert AuthModel object to a map using toJson() method
       Map<String, dynamic> authData = authModel.toJson();
@@ -123,19 +134,35 @@ class AuthRemoteServicesFireBase implements AuthRemoteServices {
       // Access the Firestore instance
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       String username = authData[KConstants.kEmail].toString().split('@')[0];
-      // Set the authData map to a document with the current user ID in a 'users' collection
-      await firestore.collection(KConstants.kUsersCollection).doc(userId).set({
-        KConstants.kUserName: username,
-        KConstants.kName: authData[KConstants.kUserName],
-        KConstants.kEmail: authData[KConstants.kEmail],
-        KConstants.kPhone: '',
-        KConstants.kProfileImageUrl: '',
-        KConstants.kBio: '',
-        KConstants.kUserId: userId,
-        KConstants.kNFollowers: '0',
-        KConstants.kNFollowing: '0',
-        KConstants.kNPosts: '0',
-      });
+
+// check if its for updating user data after log in or for setting user data after sign in
+      if (isupdate) {
+        // Update the user FCM token after log in
+        await firestore
+            .collection(KConstants.kUsersCollection)
+            .doc(userId)
+            .update({
+          KConstants.kFCMToken: fcmToken, // Save the FCM token
+        });
+      } else {
+        // Set the authData map to a document with the current user ID in a 'users' collection
+        await firestore
+            .collection(KConstants.kUsersCollection)
+            .doc(userId)
+            .set({
+          KConstants.kUserName: username,
+          KConstants.kName: authData[KConstants.kUserName],
+          KConstants.kEmail: authData[KConstants.kEmail],
+          KConstants.kPhone: '',
+          KConstants.kProfileImageUrl: '',
+          KConstants.kBio: '',
+          KConstants.kUserId: userId,
+          KConstants.kNFollowers: '0',
+          KConstants.kNFollowing: '0',
+          KConstants.kNPosts: 0,
+          KConstants.kFCMToken: fcmToken, // Save the FCM token
+        });
+      }
 
       return Future.value(unit);
     } catch (e) {
@@ -146,8 +173,28 @@ class AuthRemoteServicesFireBase implements AuthRemoteServices {
   @override
   Future<Unit> logOut() async {
     try {
+      // Get the current user ID
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      // // Retrieve the FCM token
+      // String fcmToken = await getFCMToken();
+
+      // Access the Firestore instance
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      // Remove the FCM token from the user document
+      await firestore
+          .collection(KConstants.kUsersCollection)
+          .doc(userId)
+          .update({
+        KConstants.kFCMToken: FieldValue.delete(),
+      });
+
       // Sign out the current user using FirebaseAuth
       await FirebaseAuth.instance.signOut();
+
+      // Unsubscribe from FCM topic using the FCM token
+      await FirebaseMessaging.instance.unsubscribeFromTopic(userId);
 
       return Future.value(unit);
     } catch (e) {

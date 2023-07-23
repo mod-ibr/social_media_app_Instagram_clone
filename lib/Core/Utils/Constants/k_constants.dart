@@ -9,6 +9,8 @@ abstract class KConstants {
   static const kUsersCollection = 'users';
   static const kpostsCollection = 'posts';
   static const kLikesCollection = 'likes';
+  static const kFCMToken = 'fcmToken';
+
   static const kCommentsCollection = 'comments';
   static const kSplashScreenDurationInSecond = 3;
   static const kProfileImageUrl = 'profileImageurl';

@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -121,7 +123,7 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       // Create a reference to the profile_img file in Firebase Storage
       firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
           .ref()
-          .child(KConstants.kStorageProfileFolder)
+          .child(storageFolder)
           .child('${userId}_$imageName.jpg');
 
       // Upload the image file to Firebase Storage
@@ -239,6 +241,13 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
           .doc(postId);
       await postDocRef.set(post.toJson());
 
+      // update user data to increae number of posts
+      AuthModel userData = await getuserDataById(uid: userId);
+      int newNPosts = userData.nPosts! + 1;
+      DocumentReference userDocRef = FirebaseFirestore.instance
+          .collection(KConstants.kUsersCollection)
+          .doc(userId);
+      await userDocRef.update({KConstants.kNPosts: newNPosts});
       // Create the nested collections for likes and comments
       await postDocRef.collection(KConstants.kLikesCollection).add({});
       await postDocRef.collection(KConstants.kCommentsCollection).add({});
@@ -413,7 +422,7 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       PostModel post =
           PostModel.fromJson(postSnapshot.data() as Map<String, dynamic>);
       // List<String> likedPostIds = post.likedPostIds ?? [];
-      List<String> likedPostIds = post.likedPostIds;
+      List<String> likedPostIds = List<String>.from(post.likedPostIds);
 
       if (likedPostIds.contains(userId)) {
         // User already liked the post, so we need to unlike it.
@@ -444,6 +453,13 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       await postDocRef.update({
         KConstants.kLikedPostIds: likedPostIds,
       });
+      // Notify the post owner
+      AuthModel postOwner = await getuserDataById(uid: post.userId);
+      // sendNotificationToUser(
+      //   receiverId: postOwner.userId!,
+      //   title: 'Instagram',
+      //   body: 'New likes for your post.',
+      // );
 
       print('Successfully liked/unliked the post');
     } catch (e) {
@@ -487,4 +503,66 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       throw ServerException();
     }
   }
+
+// Future<void> sendNotificationToUser({
+//     required String receiverId,
+//     required String title,
+//     required String body,
+//   }) async {
+//     try {
+//       // Get the FCM token for the receiver
+//       DocumentSnapshot<Map<String, dynamic>> userSnapshot =
+//           await FirebaseFirestore.instance
+//               .collection(KConstants.kUsersCollection)
+//               .doc(receiverId)
+//               .get();
+//       if (userSnapshot.exists) {
+//         String fcmToken = userSnapshot.data()![KConstants.kFCMToken];
+
+//         // Configure the FirebaseMessaging instance
+//         FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+//         // Create the notification message
+//         RemoteNotification notification = RemoteNotification(
+//           title: title,
+//           body: body,
+
+//         );
+
+//         // Create the Android-specific notification details
+//         AndroidNotification androidNotification = AndroidNotification(
+//           priority: Priority.high,
+//           notification: notification,
+//         );
+
+//         // Create the iOS-specific notification details
+//         IosNotification iosNotification = IosNotification(
+//           sound: 'default',
+//           badge: 1,
+//           notification: notification,
+//         );
+
+//         // Create the platform-specific notification details
+//         NotificationDetails notificationDetails = NotificationDetails(
+//           android: androidNotification,
+//           iOS: iosNotification,
+//         );
+
+//         // Send the notification
+//         await messaging.showNotification(
+//           title: title,
+//           body: body,
+//           // Specify the FCM token of the receiver
+//           to: fcmToken,
+//           // Pass the platform-specific notification details
+//           notificationDetails: notificationDetails,
+//         );
+
+//         print('Notification sent successfully');
+//       }
+//     } catch (e) {
+//       print('Error sending notification: $e');
+//       throw ServerException();
+//     }
+//   }
 }

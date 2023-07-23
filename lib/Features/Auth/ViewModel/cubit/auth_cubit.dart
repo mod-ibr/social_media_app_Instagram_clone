@@ -115,7 +115,7 @@ class AuthCubit extends Cubit<AuthState> {
         await authRemoteServices.createAccount(
             email: authModel.email, password: password);
 
-        await authRemoteServices.setUserData(authModel);
+        await authRemoteServices.setUserData(authModel: authModel);
         await authLocalServices.setUserData(authModel);
         await authLocalServices.setIsUserLoggedIn(isUserLoggedIn: true);
 
@@ -144,6 +144,8 @@ class AuthCubit extends Cubit<AuthState> {
         await authRemoteServices
             .emailAndPasswordLogIn(email: authModel.email, password: password)
             .then((value) async {
+          await authRemoteServices.setUserData(
+              authModel: authModel, isupdate: true);
           await authLocalServices.setUserData(authModel);
           await authLocalServices.setIsUserLoggedIn(isUserLoggedIn: true);
         });
@@ -171,7 +173,7 @@ class AuthCubit extends Cubit<AuthState> {
           email: userCredential.user!.email!,
           phone: userCredential.user!.phoneNumber ?? '',
         );
-        await authRemoteServices.setUserData(authModel);
+        await authRemoteServices.setUserData(authModel: authModel);
         await authLocalServices.setUserData(authModel);
         await authLocalServices.setIsUserLoggedIn(isUserLoggedIn: true);
 
@@ -196,7 +198,7 @@ class AuthCubit extends Cubit<AuthState> {
             userName: userCredential.user!.displayName ?? '',
             email: userCredential.user!.email ?? '',
             phone: userCredential.user!.phoneNumber ?? '');
-        await authRemoteServices.setUserData(authModel);
+        await authRemoteServices.setUserData(authModel: authModel);
         await authLocalServices.setUserData(authModel);
         await authLocalServices.setIsUserLoggedIn(isUserLoggedIn: true);
 

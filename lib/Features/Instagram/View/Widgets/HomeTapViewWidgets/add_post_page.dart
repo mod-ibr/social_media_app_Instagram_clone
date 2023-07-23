@@ -77,21 +77,22 @@ class AddPostPage extends StatelessWidget {
       required double width,
       required double height,
       required BuildContext context}) {
-    return BlocConsumer<HomeViewTabCubit, HomeViewTabState>(
-      listener: (context, state) {
-        if (state is SucceededAddPostState) {
-          AnimatedNavigation().navigateAndRemoveUntil(
-              widget:
-                  const HomeView(customPage: KConstants.kHomeViewPageNumber),
-              context: context);
-        }
-      },
+    return BlocBuilder<HomeViewTabCubit, HomeViewTabState>(
       builder: (context, state) {
         if (state is LoadingAddPostState) {
           return const LoadingWidget();
         } else if (state is ErrorAddPostState) {
-          AwesomeDialogMessage()
-              .showErrorAwesomeDialog(message: state.message, context: context);
+          Future.delayed(Duration.zero, () {
+            AwesomeDialogMessage().showErrorAwesomeDialog(
+                message: state.message, context: context);
+          });
+        } else if (state is SucceededAddPostState) {
+          Future.delayed(Duration.zero, () {
+            AnimatedNavigation().navigateAndRemoveUntil(
+                widget:
+                    const HomeView(customPage: KConstants.kHomeViewPageNumber),
+                context: context);
+          });
         }
         return _postData(width, height, context);
       },
@@ -164,7 +165,7 @@ class AddPostPage extends StatelessWidget {
 
   void post(context) async {
     print(_captionController.text);
-    BlocProvider.of<HomeViewTabCubit>(context)
+    await BlocProvider.of<HomeViewTabCubit>(context)
         .addPost(imageFile: imageFile, description: _captionController.text);
   }
 }

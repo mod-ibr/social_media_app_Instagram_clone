@@ -244,7 +244,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
     required String name,
     required String nFollowers,
     required String nFollowing,
-    required String nPosts,
+    required int nPosts,
   }) {
     return SizedBox(
       height: 100,
@@ -312,7 +312,7 @@ class _ProfileTabViewBodyState extends State<ProfileTabViewBody>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CustomText(
-                      text: nPosts,
+                      text: nPosts.toString(),
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),

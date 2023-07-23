@@ -10,19 +10,21 @@ class AuthModel {
   final String? bio;
   final String? nFollowers;
   final String? nFollowing;
-  final String? nPosts;
-
-  const AuthModel(
-      {this.userName,
-      this.name,
-      required this.email,
-      this.phone,
-      this.userId,
-      this.profileImgUrl,
-      this.bio,
-      this.nFollowers,
-      this.nFollowing,
-      this.nPosts});
+  final int? nPosts;
+  final String? fcmToken;
+  const AuthModel({
+    this.userName,
+    this.name,
+    required this.email,
+    this.phone,
+    this.userId,
+    this.profileImgUrl,
+    this.bio,
+    this.nFollowers,
+    this.nFollowing,
+    this.nPosts,
+    this.fcmToken,
+  });
 
   factory AuthModel.fromJson(Map<String, dynamic> map) {
     return AuthModel(
@@ -35,7 +37,8 @@ class AuthModel {
       profileImgUrl: map[KConstants.kProfileImageUrl] ?? '',
       nFollowers: map[KConstants.kNFollowers] ?? '',
       nFollowing: map[KConstants.kNFollowing] ?? '',
-      nPosts: map[KConstants.kNPosts] ?? "",
+      nPosts: map[KConstants.kNPosts] ?? 0,
+      fcmToken: map[KConstants.kFCMToken] ?? '',
     );
   }
 
@@ -51,6 +54,7 @@ class AuthModel {
       KConstants.kNFollowers: nFollowers,
       KConstants.kNFollowing: nFollowing,
       KConstants.kNPosts: nPosts,
+      KConstants.kFCMToken: fcmToken,
     };
   }
 }
