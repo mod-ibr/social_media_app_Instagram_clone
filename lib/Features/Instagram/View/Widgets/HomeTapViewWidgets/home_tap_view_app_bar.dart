@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:instagram/Core/Utils/Functions/animated_navigation.dart';
+import 'package:instagram/Features/Instagram/View/Widgets/HomeTapViewWidgets/activity_page.dart';
 
 import '../../../../../Core/Utils/Constants/color_constants.dart';
 import '../../../ViewModel/HomeViewTapModelView/home_view_tab_cubit.dart';
@@ -54,7 +56,9 @@ class HomeTabViewAppBar extends StatelessWidget {
               ),
               _appBarLeadingIconButton(
                   onTap: () {
-                    print(' Loves Buttons to show Notification Page ');
+                    print('Activity Buttons to show Notification Page ');
+                    AnimatedNavigation().navigateAndPush(
+                        widget: const ActivityPage(), context: context);
                   },
                   icon: Icons.favorite_border,
                   context: context),
@@ -63,7 +67,7 @@ class HomeTabViewAppBar extends StatelessWidget {
               ),
               _appBarLeadingIconButton(
                   onTap: () {
-                    print(' Loves Buttons to show Notification Page ');
+                    print(' Message Buttons to show Chat Page ');
                   },
                   icon: Icons.messenger_outline,
                   context: context),

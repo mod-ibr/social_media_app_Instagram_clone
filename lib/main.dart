@@ -12,6 +12,11 @@ import 'Features/Instagram/ViewModel/HomeViewTapModelView/home_view_tab_cubit.da
 import 'firebase_options.dart';
 import 'services_locator.dart' as di;
 
+Future<void> fireBaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('===================================');
+  print(message);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.servicesLocator();

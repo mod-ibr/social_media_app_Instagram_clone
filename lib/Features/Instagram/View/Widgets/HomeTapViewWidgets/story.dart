@@ -21,9 +21,7 @@ class Story extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
 
     return BlocConsumer<HomeViewTabCubit, HomeViewTabState>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return Container(
           height: 100,

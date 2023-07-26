@@ -28,7 +28,10 @@ class _PostsState extends State<Posts> {
     return BlocBuilder<HomeViewTabCubit, HomeViewTabState>(
       builder: (context, state) {
         if (state is LoadingGetPostsState) {
-          return const Center(child: CircularProgressIndicator());
+          return SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: const Center(child: CircularProgressIndicator()));
         } else if (state is ErrorGetPostsState) {
           return failureWidget(
               text: state.message, icon: Icons.image_not_supported_outlined);
@@ -46,7 +49,7 @@ class _PostsState extends State<Posts> {
     return Column(
       children: [
         SizedBox(
-          height: 500,
+          height: MediaQuery.of(context).size.height * 0.7,
           child: ListView.builder(
             scrollDirection: Axis.vertical,
             itemCount: posts.length,

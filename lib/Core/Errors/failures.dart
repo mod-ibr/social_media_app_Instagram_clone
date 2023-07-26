@@ -66,3 +66,7 @@ class PostNotFoundFailure extends Failure {
   @override
   List<Object?> get props => [];
 }
+class EmptyNotiicationFailure extends Failure {
+  @override
+  List<Object?> get props => [];
+}

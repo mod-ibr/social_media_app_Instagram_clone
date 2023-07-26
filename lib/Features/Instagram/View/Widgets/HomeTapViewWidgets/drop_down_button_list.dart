@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../Core/Widgets/custom_text.dart';
+import '../../../../Auth/ViewModel/cubit/auth_cubit.dart';
 
 class CustomDropDownButtonList extends StatelessWidget {
   final double width;
@@ -66,6 +68,37 @@ class CustomDropDownButtonList extends StatelessWidget {
                   const SizedBox(width: 15),
                   Icon(
                     Icons.star_outline_rounded,
+                    size: width * 0.095,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.35,
+              margin: const EdgeInsets.only(top: 10, bottom: 10),
+              decoration: BoxDecoration(
+                  border: Border.all(
+                width: 0.5,
+                color: Colors.grey[300]!,
+              )),
+            ),
+            InkWell(
+              onTap: () {
+                print('LogOut Button From Drop down Button');
+                BlocProvider.of<AuthCubit>(context).logOut();
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CustomText(
+                    text: 'LogOut',
+                    fontSize: width * 0.055,
+                  ),
+                  const SizedBox(width: 15),
+                  Icon(
+                    Icons.logout,
+                    color: Colors.redAccent,
                     size: width * 0.095,
                   ),
                 ],

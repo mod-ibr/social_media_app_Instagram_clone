@@ -20,4 +20,5 @@ abstract class ErrorsStrings {
   static String retrievingPostsFailureMessage = 'Error retrieving user posts';
   static String noRetrievedPostsFailureMessage = 'No Posts yet';
   static String postNotFoundFailureMessage = 'Post not found';
+  static String emptyNotiicationFailureMessage = 'No Notifications Yet';
 }

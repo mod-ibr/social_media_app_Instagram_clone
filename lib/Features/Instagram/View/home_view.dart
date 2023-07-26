@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/Core/Utils/Constants/color_constants.dart';
+import 'package:instagram/Core/Utils/Functions/notification_handler.dart';
 import 'package:instagram/Features/Instagram/View/HomeViewTaps/home_tap_view.dart';
 import 'package:instagram/Features/Instagram/View/HomeViewTaps/profile_tap_view.dart';
 import 'package:instagram/Features/Instagram/View/HomeViewTaps/reels_tap_view.dart';
 import 'package:instagram/Features/Instagram/View/HomeViewTaps/search_tap_view.dart';
-
-import 'log_out.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key, this.customPage});
@@ -25,6 +24,8 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     pageController = PageController(
         initialPage: (widget.customPage != null) ? widget.customPage! : _page);
+
+    NotificationHandler().setupInteractedMessage(context);
   }
 
   @override
@@ -44,7 +45,6 @@ class _HomeViewState extends State<HomeView> {
   }
 
   List<Widget> pagesView = [
-    const LogOut(),
     const HomeTapView(),
     const SearchTapView(),
     const ReelsTapView(),
@@ -56,31 +56,27 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     List<BottomNavigationBarItem> bottomNavigationBarItemsList = [
       _bottomNavBar(
-        sicon: Icons.logout,
-        dicon: Icons.logout_outlined,
-        pageNumber: 0,
-      ),
-      _bottomNavBar(
           sicon: CupertinoIcons.house_fill,
           dicon: CupertinoIcons.house,
-          pageNumber: 1),
+          pageNumber: 0),
       _bottomNavBar(
+
         sicon: CupertinoIcons.search,
         dicon: Icons.search,
-        pageNumber: 2,
+        pageNumber: 1,
       ),
       _bottomNavBar(
           sicon: Icons.video_collection_rounded,
           dicon: Icons.video_collection_outlined,
-          pageNumber: 3),
+          pageNumber: 2),
       _bottomNavBar(
           sicon: CupertinoIcons.bag_fill,
           dicon: CupertinoIcons.bag,
-          pageNumber: 4),
+          pageNumber: 3),
       _bottomNavBar(
           sicon: CupertinoIcons.person_circle_fill,
           dicon: CupertinoIcons.person_circle,
-          pageNumber: 5),
+          pageNumber: 4),
     ];
 
     return Scaffold(

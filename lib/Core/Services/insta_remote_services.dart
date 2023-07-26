@@ -1,7 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +10,9 @@ import 'package:path/path.dart' as path;
 import '../../Features/Auth/Model/auth_model.dart';
 import '../../Features/Instagram/Model/comment_model.dart';
 import '../../Features/Instagram/Model/like_model.dart';
+import '../../Features/Instagram/Model/notification_model.dart';
 import '../Utils/Constants/k_constants.dart';
+import 'package:http/http.dart' as http;
 
 abstract class InstaRemoteServices {
   Future<AuthModel> getuserDataById({required String uid});
@@ -32,6 +33,15 @@ abstract class InstaRemoteServices {
   Future<void> likePost({required String postId});
   Future<void> addComment({required String postId, required String content});
   Future<PostModel> getPostById({required String postId});
+  Future<void> sendNotification({
+    required String receiverId,
+    required String type,
+    required String title,
+    required String body,
+  });
+  Future<void> saveNotification(
+      String userId, NotificationModel notificationModel);
+  Future<List<NotificationModel>> getUserNotifications();
 }
 
 class InstaRemoteServicesFireBase implements InstaRemoteServices {
@@ -411,7 +421,7 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
     try {
       // Get the current user Id.
       String userId = getCurrentUserId();
-
+      AuthModel userData = await getuserDataById(uid: userId);
       // Get the post document reference.
       DocumentReference postDocRef = FirebaseFirestore.instance
           .collection(KConstants.kpostsCollection)
@@ -436,10 +446,14 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
       } else {
         // User hasn't liked the post yet, so we need to like it.
         likedPostIds.add(userId);
+        AuthModel likerUser = await getuserDataById(uid: userId);
 
         // Create the like document in the nested like collection.
         LikeModel like = LikeModel(
           userId: userId,
+          postId: postId,
+          profileimageUrl: likerUser.profileImgUrl ?? " ",
+          userName: likerUser.userName!,
           likeId: postId, // Use the same ID as the post ID for simplicity
           timestamp: DateTime.now(),
         );
@@ -447,23 +461,85 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
             .collection(KConstants.kLikesCollection)
             .doc(userId)
             .set(like.toJson());
+        if (userId != post.userId) {
+          // Notify the post owner
+          AuthModel postOwner = await getuserDataById(uid: post.userId);
+          sendNotification(
+            type: KConstants.kFCMLikeType,
+            receiverId: postOwner.userId!,
+            title: 'Instagram',
+            body: 'New like for your post.',
+          );
+          NotificationModel notificationModel = NotificationModel(
+              postId: postId,
+              postImageUrl: post.imageURL,
+              likerId: userId,
+              likerName: userData.name!,
+              timeStamp: DateTime.now());
+          saveNotification(userId, notificationModel);
+        }
       }
 
       // Update the post document with the new likedPostIds list.
       await postDocRef.update({
         KConstants.kLikedPostIds: likedPostIds,
       });
-      // Notify the post owner
-      AuthModel postOwner = await getuserDataById(uid: post.userId);
-      // sendNotificationToUser(
-      //   receiverId: postOwner.userId!,
-      //   title: 'Instagram',
-      //   body: 'New likes for your post.',
-      // );
 
       print('Successfully liked/unliked the post');
     } catch (e) {
       print('Error when liking/unliking the post: $e');
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> sendNotification({
+    required String receiverId,
+    required String type,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      // Get the FCM token for the receiver
+      DocumentSnapshot<Map<String, dynamic>> userSnapshot =
+          await FirebaseFirestore.instance
+              .collection(KConstants.kUsersCollection)
+              .doc(receiverId)
+              .get();
+      if (userSnapshot.exists) {
+        String fcmToken = userSnapshot.data()![KConstants.kFCMToken];
+
+        // Configure the FirebaseMessaging instance
+        // FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+        await http.post(
+          Uri.parse('https://fcm.googleapis.com/fcm/send'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+            'Authorization':
+                'key=${KConstants.kFCMServerToken}', //  Server key is equql to server Token, server Key -> project settings -> Cloud messaging
+          },
+          body: jsonEncode(
+            <String, dynamic>{
+              'notification': <String, dynamic>{
+                'body': body.toString(),
+                'title': title.toString()
+              },
+              'priority': 'high',
+              'data': <String, dynamic>{
+                'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                'type': type.toString(),
+                'receiverId': receiverId
+              },
+              'to': fcmToken
+            },
+          ),
+        );
+
+        print('Notification sent successfully');
+      }
+    } catch (e) {
+      print('Error sending notification: $e');
       throw ServerException();
     }
   }
@@ -504,65 +580,51 @@ class InstaRemoteServicesFireBase implements InstaRemoteServices {
     }
   }
 
-// Future<void> sendNotificationToUser({
-//     required String receiverId,
-//     required String title,
-//     required String body,
-//   }) async {
-//     try {
-//       // Get the FCM token for the receiver
-//       DocumentSnapshot<Map<String, dynamic>> userSnapshot =
-//           await FirebaseFirestore.instance
-//               .collection(KConstants.kUsersCollection)
-//               .doc(receiverId)
-//               .get();
-//       if (userSnapshot.exists) {
-//         String fcmToken = userSnapshot.data()![KConstants.kFCMToken];
+  @override
+  Future<void> saveNotification(
+      String userId, NotificationModel notificationModel) async {
+    try {
+      // Create a new document in the 'Notifications' sub-collection of the user's document
+      DocumentReference notificationDocRef = firestore
+          .collection(KConstants.kUsersCollection)
+          .doc(userId)
+          .collection(KConstants.kNotificationsCollection)
+          .doc();
 
-//         // Configure the FirebaseMessaging instance
-//         FirebaseMessaging messaging = FirebaseMessaging.instance;
+      // Set the notification data in the new document
+      await notificationDocRef.set(notificationModel.toJson());
 
-//         // Create the notification message
-//         RemoteNotification notification = RemoteNotification(
-//           title: title,
-//           body: body,
+      print('Notification added successfully');
+    } catch (e) {
+      print('Error adding notification: $e');
+      throw ServerException();
+    }
+  }
 
-//         );
+  @override
+  Future<List<NotificationModel>> getUserNotifications() async {
+    try {
+      // Get the current user Id.
+      String userId = getCurrentUserId();
+      // Get the 'Notifications' sub-collection of the user's document
+      QuerySnapshot querySnapshot = await firestore
+          .collection(KConstants.kUsersCollection)
+          .doc(userId)
+          .collection(KConstants.kNotificationsCollection)
+          .orderBy(KConstants.kTimestamp,
+              descending:
+                  true) // Order by timestamp in descending order (most recent to oldest)
+          .get();
 
-//         // Create the Android-specific notification details
-//         AndroidNotification androidNotification = AndroidNotification(
-//           priority: Priority.high,
-//           notification: notification,
-//         );
-
-//         // Create the iOS-specific notification details
-//         IosNotification iosNotification = IosNotification(
-//           sound: 'default',
-//           badge: 1,
-//           notification: notification,
-//         );
-
-//         // Create the platform-specific notification details
-//         NotificationDetails notificationDetails = NotificationDetails(
-//           android: androidNotification,
-//           iOS: iosNotification,
-//         );
-
-//         // Send the notification
-//         await messaging.showNotification(
-//           title: title,
-//           body: body,
-//           // Specify the FCM token of the receiver
-//           to: fcmToken,
-//           // Pass the platform-specific notification details
-//           notificationDetails: notificationDetails,
-//         );
-
-//         print('Notification sent successfully');
-//       }
-//     } catch (e) {
-//       print('Error sending notification: $e');
-//       throw ServerException();
-//     }
-//   }
+      // Convert the query snapshot to a list of NotificationModel
+      List<NotificationModel> notifications = querySnapshot.docs.map((doc) {
+        return NotificationModel.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+      
+      return notifications;
+    } catch (e) {
+      print('Error getting notifications: $e');
+      throw ServerException();
+    }
+  }
 }

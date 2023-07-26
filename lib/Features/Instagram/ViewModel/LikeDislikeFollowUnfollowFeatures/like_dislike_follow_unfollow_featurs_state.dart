@@ -35,4 +35,22 @@ class ErrorlikeState extends LikeDislikeFollowUnfollowFeatursState {
   List<Object> get props => [message, isAnimating];
 }
 
+class LoadingGetNotificationsListState
+    extends LikeDislikeFollowUnfollowFeatursState {}
 
+class SucceededGetNotificationsListState
+    extends LikeDislikeFollowUnfollowFeatursState {
+  final List<NotificationModel> notifications;
+  const SucceededGetNotificationsListState({required this.notifications});
+  @override
+  List<Object> get props => [notifications];
+}
+
+class ErrorGetNotificationsListState
+    extends LikeDislikeFollowUnfollowFeatursState {
+  final String message;
+
+  const ErrorGetNotificationsListState({required this.message});
+  @override
+  List<Object> get props => [message];
+}

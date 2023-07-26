@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram/Features/Instagram/Model/notification_model.dart';
 import 'package:instagram/Features/Instagram/Model/post_model.dart';
 
 import '../../../../Core/Errors/errors_strings.dart';
@@ -45,6 +46,24 @@ class LikeDislikeFollowUnfollowFeatursCubit
     );
   }
 
+  Future<void> getNotifications() async {
+    emit(LoadingGetNotificationsListState());
+    final Either<Failure, List<NotificationModel>> failureOrSuccess =
+        await _getNotifications();
+
+    failureOrSuccess.fold(
+      (failure) {
+        print(
+            'Failure While getting Notification from Cubit {LikeDislikeFollowUnfollowFeatursCubit}');
+        emit(ErrorGetNotificationsListState(
+            message: mapFailureToMessage(failure)));
+      },
+      (success) {
+        emit(SucceededGetNotificationsListState(notifications: success));
+      },
+    );
+  }
+
   Future<Either<Failure, PostModel>> _likePost({required String postId}) async {
     if (await networkConnectionChecker.isConnected) {
       try {
@@ -74,6 +93,23 @@ class LikeDislikeFollowUnfollowFeatursCubit
     }
   }
 
+  Future<Either<Failure, List<NotificationModel>>> _getNotifications() async {
+    if (await networkConnectionChecker.isConnected) {
+      try {
+        List<NotificationModel> allNotifications =
+            await instaRemoteServices.getUserNotifications();
+        if (allNotifications.isEmpty) {
+          return left(EmptyNotiicationFailure());
+        }
+        return Right(allNotifications);
+      } on ServerException {
+        return left(ServerFailure());
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
+  }
+
   String mapFailureToMessage(Failure failure) {
     switch (failure.runtimeType) {
       case ServerFailure:
@@ -82,6 +118,8 @@ class LikeDislikeFollowUnfollowFeatursCubit
         return ErrorsStrings.offlineFailureMessage;
       case PostNotFoundFailure:
         return ErrorsStrings.postNotFoundFailureMessage;
+      case EmptyNotiicationFailure:
+        return ErrorsStrings.emptyNotiicationFailureMessage;
       default:
         return "Unexpected Error , Please try again later .";
     }

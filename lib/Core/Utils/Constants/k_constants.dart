@@ -9,6 +9,7 @@ abstract class KConstants {
   static const kUsersCollection = 'users';
   static const kpostsCollection = 'posts';
   static const kLikesCollection = 'likes';
+  static const kNotificationsCollection = 'Notifications';
   static const kFCMToken = 'fcmToken';
 
   static const kCommentsCollection = 'comments';
@@ -25,6 +26,8 @@ abstract class KConstants {
   static const kCommentId = 'commentId';
   static const kLikedPostIds = 'likedPostIds';
   static const kCommentedPostIds = 'commentedPostIds';
+  static const kLikerId = 'likerId';
+  static const kLikerName = 'likerName';
 
   static const kContent = 'content';
   static const kNFollowers = 'nFollowers';
@@ -37,4 +40,8 @@ abstract class KConstants {
 
   static const kProfilePageNumber = 5;
   static const kHomeViewPageNumber = 1;
+
+  static const kFCMServerToken =
+      'AAAAkHr6Izk:APA91bGnpnQTTKfWg9RYqfvg1q4xrQN2pfID7ZHdWjvlGhz9WRuofd_JLHyvlf-_6-s4IXZvfxwISPKL93wzWJaISrdjN86LQT-dPGQGCpw2ieGsXIUa6g7rxM8V4zwBsH3-DCcCncXC';
+  static const kFCMLikeType = 'like';
 }
